@@ -17,8 +17,6 @@
     "skipLibCheck": true
   },
   "vueCompilerOptions": {
-    "plugins": [
-      "../dist/volar.js"
-    ]
+    "plugins": ["../dist/volar.js"]
   }
 }

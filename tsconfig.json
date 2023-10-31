@@ -2,28 +2,18 @@
   "compilerOptions": {
     "target": "es2022",
     "jsx": "preserve",
-    "lib": [
-      "es2022"
-    ],
+    "lib": ["es2022"],
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
+    "types": ["node", "vue/macros-global"],
     "strict": true,
     "noUnusedLocals": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "types": [
-      "node",
-      "vue/macros-global"
-    ]
+    "skipLibCheck": true
   },
   "vueCompilerOptions": {
-    "plugins": [
-      "./dist/volar.js"
-    ]
+    "plugins": ["./dist/volar.js"]
   },
-  "include": [
-    "src",
-    "tests"
-  ]
+  "include": ["src", "tests"]
 }
