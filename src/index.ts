@@ -94,14 +94,22 @@ function transformReactivityFunction(code: string, id: string) {
   for (const { ast, offset } of asts) {
     walkAST<t.Node>(ast, {
       enter(node, parent) {
+        let name
         if (
           node.type === 'CallExpression' &&
-          node.callee.type === 'Identifier' &&
+          [
+            'Identifier',
+            'MemberExpression',
+            'OptionalMemberExpression',
+          ].includes(node.callee.type) &&
           /^\$(?!(\$|ref|computed|shallowRef|toRef|customRef|defineProp|defineProps|defineModels)?(\(|$))/.test(
-            node.callee.name
+            (name = code.slice(
+              node.callee.start! + offset,
+              node.callee.end! + offset
+            ))
           )
         ) {
-          if (node.callee.name.startsWith('$$')) {
+          if (name.startsWith('$$')) {
             s.remove(
               node.callee.start! + offset,
               node.callee.start! + offset + 2

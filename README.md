@@ -82,7 +82,7 @@ module.exports = {
 ## Usage
 
 ```ts
-// /store/user.ts
+// ~/store/user.ts
 export const useUserStore = $$defineStore('user', () => {
   let token = $ref('')
   function login() {
@@ -112,13 +112,14 @@ export const useUserStore = defineStore('user', () => {
 ```vue
 <script setup lang="tsx">
 import { useBase64 } from '@vueuse/core'
+import { useUserStore } from '~/store/user'
 
-function log(...logs: Ref<any>[]) {
-  console.log(logs)
-}
+const { token, login } = $toRefs(useUserStore())
+// is equivalent to:
+const { token, login } = $(toRefs(useUserStore()))
+login()
 
-const defaultText = $ref('vue')
-const text = $inject('text', defaultText)
+const text = $inject('text', token)
 // is equivalent to:
 const text = $(inject('text', $$(defaultText)))
 
@@ -127,19 +128,19 @@ const { base64 } = $useBase64(text)
 const { base64 } = $(useBase64($$(text)))
 
 $watch(base64, () => {
-  $log(base64)
+  $console.log(base64)
 })
 // is equivalent to:
 watch($$(base64), () => {
-  log($$(base64))
+  console.log($$(base64))
 })
 
 const stop = $$watch(base64, () => {
-  $log(base64)
+  $console.log(base64)
 })
 // is equivalent to:
 const stop = watch($$(base64), () => {
-  log($$(base64))
+  console.log($$(base64))
 })
 stop()
 
