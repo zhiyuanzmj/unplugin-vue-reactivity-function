@@ -21,6 +21,11 @@ function transformArguments(argument: t.Node, s: MagicString, offset: number) {
   ) {
     s.appendLeft(argument.start! + offset, '$$(')
     s.appendRight(argument.end! + offset, ')')
+  } else if (
+    argument.type === 'FunctionExpression' ||
+    argument.type === 'ArrowFunctionExpression'
+  ) {
+    transformFunctionReturn(argument, s, offset)
   } else if (argument.type === 'ArrayExpression') {
     argument.elements.forEach((arg) => {
       transformArguments(arg!, s, offset)
@@ -39,6 +44,23 @@ function transformArguments(argument: t.Node, s: MagicString, offset: number) {
       }
     })
   }
+}
+
+function transformFunctionReturn(node: t.Node, s: MagicString, offset: number) {
+  if (
+    node.type === 'FunctionDeclaration' ||
+    node.type === 'FunctionExpression' ||
+    node.type === 'ArrowFunctionExpression'
+  )
+    if (node.body.type !== 'BlockStatement') {
+      transformArguments(node.body, s, offset)
+    } else {
+      node.body.body?.forEach((statement) => {
+        if (statement.type === 'ReturnStatement' && statement.argument) {
+          transformArguments(statement.argument, s, offset)
+        }
+      })
+    }
 }
 
 function transformReactivityFunction(code: string, id: string) {

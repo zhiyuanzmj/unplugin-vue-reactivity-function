@@ -1,8 +1,8 @@
 # unplugin-vue-reactivity-function [![npm](https://img.shields.io/npm/v/unplugin-vue-reactivity-function.svg)](https://npmjs.com/package/unplugin-vue-reactivity-function)
 
-[![Unit Test](https://github.com/zhiyuanzmj/unplugin-vue-reactivity-function/actions/workflows/unit-test.yml/badge.svg)](https://github.com/unplugin/unplugin-vue-reactivity-function/actions/workflows/unit-test.yml)
+[![Unit Test](https://github.com/zhiyuanzmj/unplugin-vue-reactivity-function/actions/workflows/unit-test.yml/badge.svg)](https://github.com/zhiyuanzmj/unplugin-vue-reactivity-function/actions/workflows/unit-test.yml)
 
-Named export for Vue SFC.
+Reactive Function.
 
 ## Installation
 
@@ -80,6 +80,34 @@ module.exports = {
 <br></details>
 
 ## Usage
+
+```ts
+// /store/user.ts
+export const useUserStore = $$defineStore('user', () => {
+  let token = $ref('')
+  function login() {
+    token = 'TOKEN'
+  }
+
+  return {
+    token,
+    login,
+  }
+})
+
+// is equivalent to:
+export const useUserStore = defineStore('user', () => {
+  let token = $ref('')
+  function login() {
+    token = 'TOKEN'
+  }
+
+  return {
+    token: $$(token),
+    login: $$(login),
+  }
+})
+```
 
 ```vue
 <script setup lang="tsx">

@@ -8,6 +8,9 @@ dependencies:
   '@vueuse/core':
     specifier: ^10.5.0
     version: 10.5.0(vue@3.3.6)
+  pinia:
+    specifier: ^2.1.7
+    version: 2.1.7(typescript@5.2.2)(vue@3.3.6)
   vue:
     specifier: ^3.3.4
     version: 3.3.6(typescript@5.2.2)
@@ -794,6 +797,10 @@ packages:
     dependencies:
       '@vue/compiler-dom': 3.3.6
       '@vue/shared': 3.3.6
+
+  /@vue/devtools-api@6.5.1:
+    resolution: {integrity: sha512-+KpckaAQyfbvshdDW5xQylLni1asvNSGme1JFs8I1+/H5pHEhqUKMEQD/qn3Nx5+/nycBq11qAEi8lk+LXI2dA==}
+    dev: false
 
   /@vue/language-core@1.8.19(typescript@5.2.2):
     resolution: {integrity: sha512-nt3dodGs97UM6fnxeQBazO50yYCKBK53waFWB3qMbLmR6eL3aUryZgQtZoBe1pye17Wl8fs9HysV3si6xMgndQ==}
@@ -2039,6 +2046,24 @@ packages:
     resolution: {integrity: sha512-C3FsVNH1udSEX48gGX1xfvwTWfsYWj5U+8/uK15BGzIGrKoUpghX8hWZwa/OFnakBiiVNmBvemTJR5mcy7iPcg==}
     engines: {node: '>=4'}
     dev: true
+
+  /pinia@2.1.7(typescript@5.2.2)(vue@3.3.6):
+    resolution: {integrity: sha512-+C2AHFtcFqjPih0zpYuvof37SFxMQ7OEG2zV9jRI12i9BOy3YQVAHwdKtyyc8pDcDyIc33WCIsZaCFWU7WWxGQ==}
+    peerDependencies:
+      '@vue/composition-api': ^1.4.0
+      typescript: '>=4.4.4'
+      vue: ^2.6.14 || ^3.3.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+      typescript:
+        optional: true
+    dependencies:
+      '@vue/devtools-api': 6.5.1
+      typescript: 5.2.2
+      vue: 3.3.6(typescript@5.2.2)
+      vue-demi: 0.14.6(vue@3.3.6)
+    dev: false
 
   /pkg-types@1.0.3:
     resolution: {integrity: sha512-nN7pYi0AQqJnoLPC9eHFQ8AcyaixBUOwvqc5TDnIKCMEE6I0y8P7OKA7fPexsXGCGxQDl/cmrLAp26LhcwxZ4A==}

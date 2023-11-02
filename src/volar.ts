@@ -35,6 +35,11 @@ function transform({
         argument.getEnd(),
         ')'
       )
+    } else if (
+      ts.isArrowFunction(argument) ||
+      ts.isFunctionExpression(argument)
+    ) {
+      transformFunctionReturn(argument)
     } else if (ts.isArrayLiteralExpression(argument)) {
       argument.forEachChild((arg) => transformArguments(arg))
     } else if (ts.isObjectLiteralExpression(argument)) {
@@ -59,6 +64,26 @@ function transform({
           transformArguments(prop.initializer)
         }
       })
+    }
+  }
+
+  function transformFunctionReturn(
+    node: import('typescript/lib/tsserverlibrary').Node
+  ) {
+    if (
+      ts.isArrowFunction(node) ||
+      ts.isFunctionExpression(node) ||
+      ts.isFunctionDeclaration(node)
+    ) {
+      if (ts.isArrowFunction(node) && !ts.isBlock(node.body)) {
+        transformArguments(node.body)
+      } else {
+        node.body?.forEachChild((statement) => {
+          if (ts.isReturnStatement(statement) && statement.expression) {
+            transformArguments(statement.expression)
+          }
+        })
+      }
     }
   }
 

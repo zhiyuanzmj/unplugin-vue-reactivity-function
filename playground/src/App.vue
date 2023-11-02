@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { type Ref, inject, ref, watch } from 'vue'
+import { type Ref, inject, ref, toRefs, watch } from 'vue'
 import { useBase64 } from '@vueuse/core'
+import { useUserStore } from '../store/user'
 
 function logRef(...logs: Ref<any>[]) {
   console.log(logs)
 }
 
-const text = $inject('text', ref('vue'))
+const { token, login } = $toRefs(useUserStore())
+login()
+
+const text = $inject('text', token)
 const { base64 } = $useBase64(text)
 $watch(base64, () => {
   $logRef(base64)

@@ -1,8 +1,8 @@
 {
   "name": "unplugin-vue-reactivity-function",
   "version": "0.1.0",
-  "packageManager": "pnpm@8.9.0",
-  "description": "Reactivity function for Vue SFC.",
+  "packageManager": "pnpm@8.10.0",
+  "description": "Reactivity function.",
   "keywords": [
     "unplugin",
     "rollup",
@@ -11,13 +11,13 @@
     "webpack"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/unplugin/unplugin-vue-reactivity-function#readme",
+  "homepage": "https://github.com/zhiyuanzmj/unplugin-vue-reactivity-function#readme",
   "bugs": {
-    "url": "https://github.com/unplugin/unplugin-vue-reactivity-function/issues"
+    "url": "https://github.com/zhiyuanzmj/unplugin-vue-reactivity-function/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/unplugin/unplugin-vue-reactivity-function.git"
+    "url": "git+https://github.com/zhiyuanzmj/unplugin-vue-reactivity-function.git"
   },
   "author": "zhiyuanzmj",
   "files": [
