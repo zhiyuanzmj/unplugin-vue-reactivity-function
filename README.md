@@ -2,7 +2,7 @@
 
 [![Unit Test](https://github.com/zhiyuanzmj/unplugin-vue-reactivity-function/actions/workflows/unit-test.yml/badge.svg)](https://github.com/zhiyuanzmj/unplugin-vue-reactivity-function/actions/workflows/unit-test.yml)
 
-Reactive Function.
+Reactivity Function.
 
 ## Installation
 
