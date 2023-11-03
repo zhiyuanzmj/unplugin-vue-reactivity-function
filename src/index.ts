@@ -15,9 +15,12 @@ import type * as t from '@babel/types'
 
 function transformArguments(argument: t.Node, s: MagicString, offset: number) {
   if (
-    argument.type === 'Identifier' ||
-    argument.type === 'MemberExpression' ||
-    argument.type === 'OptionalMemberExpression'
+    [
+      'Identifier',
+      'MemberExpression',
+      'OptionalMemberExpression',
+      'TSInstantiationExpression',
+    ].includes(argument.type)
   ) {
     s.appendLeft(argument.start! + offset, '$$(')
     s.appendRight(argument.end! + offset, ')')

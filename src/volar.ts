@@ -20,7 +20,11 @@ function transform({
   function transformArguments(
     argument: import('typescript/lib/tsserverlibrary').Node
   ) {
-    if (ts.isIdentifier(argument) || ts.isPropertyAccessExpression(argument)) {
+    if (
+      ts.isIdentifier(argument) ||
+      ts.isPropertyAccessExpression(argument) ||
+      ts.isExpressionWithTypeArguments(argument)
+    ) {
       replaceSourceRange(
         codes,
         source,
