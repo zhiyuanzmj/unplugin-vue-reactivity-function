@@ -114,7 +114,11 @@ function transformReactivityFunction(code: string, id: string) {
               s.appendRight(node.start! + offset + 1, '(')
               s.appendRight(parent.end! + offset, ')')
             }
-          } else if (node.type === 'Identifier') {
+          } else if (
+            node.type === 'Identifier' &&
+            parent?.type !== 'MemberExpression' &&
+            parent?.type !== 'VariableDeclarator'
+          ) {
             s.appendRight(node.start! + offset + 1, '$(')
             s.appendRight(node.end! + offset, ')')
           }

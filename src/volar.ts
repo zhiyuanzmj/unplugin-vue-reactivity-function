@@ -128,7 +128,11 @@ function transform({
             ')'
           )
         }
-      } else if (ts.isIdentifier(node)) {
+      } else if (
+        ts.isIdentifier(node) &&
+        !ts.isPropertyAccessExpression(parent) &&
+        !ts.isVariableDeclaration(parent)
+      ) {
         replaceSourceRange(
           codes,
           source,
