@@ -1,5 +1,6 @@
 import { createUnplugin } from 'unplugin'
 import {
+  MagicString,
   REGEX_SETUP_SFC,
   REGEX_SRC_FILE,
   babelParse,
@@ -9,7 +10,6 @@ import {
   parseSFC,
   walkAST,
 } from '@vue-macros/common'
-import { MagicString } from 'vue/compiler-sfc'
 import { type Options, resolveOption } from './core/options'
 import type * as t from '@babel/types'
 
@@ -97,39 +97,27 @@ function transformReactivityFunction(code: string, id: string) {
   for (const { ast, offset } of asts) {
     walkAST<t.Node>(ast, {
       enter(node, parent) {
-        let name
         if (
-          node.type === 'CallExpression' &&
-          [
-            'Identifier',
-            'MemberExpression',
-            'OptionalMemberExpression',
-          ].includes(node.callee.type) &&
+          node.type === 'Identifier' &&
           /^\$(?!(\$|ref|computed|shallowRef|toRef|customRef|defineProp|defineProps|defineModels)?(\(|$))/.test(
-            (name = code.slice(
-              node.callee.start! + offset,
-              node.callee.end! + offset
-            ))
+            s.sliceNode(node, { offset })
           )
         ) {
-          if (name.startsWith('$$')) {
-            s.remove(
-              node.callee.start! + offset,
-              node.callee.start! + offset + 2
-            )
-          } else if (parent?.type === 'VariableDeclarator') {
-            s.appendRight(node.callee.start! + offset + 1, '(')
-            s.appendRight(node.end! + offset, ')')
-          } else {
-            s.remove(
-              node.callee.start! + offset,
-              node.callee.start! + offset + 1
-            )
-          }
+          if (parent?.type === 'CallExpression' && parent.callee === node) {
+            if (s.sliceNode(node, { offset }).startsWith('$$')) {
+              s.remove(node.start! + offset, node.start! + offset + 2)
 
-          node.arguments.forEach((argument) => {
-            transformArguments(argument, s, offset)
-          })
+              parent.arguments.forEach((argument) => {
+                transformArguments(argument, s, offset)
+              })
+            } else {
+              s.appendRight(node.start! + offset + 1, '(')
+              s.appendRight(parent.end! + offset, ')')
+            }
+          } else if (node.type === 'Identifier') {
+            s.appendRight(node.start! + offset + 1, '$(')
+            s.appendRight(node.end! + offset, ')')
+          }
         }
       },
     })

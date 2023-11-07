@@ -96,46 +96,54 @@ function transform({
     parent: import('typescript/lib/tsserverlibrary').Node
   ) {
     if (
-      ts.isCallExpression(node) &&
+      ts.isIdentifier(node) &&
       /^\$(?!(\$|ref|computed|shallowRef|toRef|customRef|defineProp|defineProps|defineModels)?(\(|$))/.test(
-        node.expression.getText(ast)
+        node.getText(ast)
       )
     ) {
-      if (node.expression.getText(ast).startsWith('$$')) {
+      if (ts.isCallExpression(parent) && parent.expression === node) {
+        if (node.getText(ast).startsWith('$$')) {
+          replaceSourceRange(
+            codes,
+            source,
+            node.getStart(ast, false),
+            node.getStart(ast, false) + 2
+          )
+          parent.arguments.forEach((argument) => {
+            transformArguments(argument)
+          })
+        } else {
+          replaceSourceRange(
+            codes,
+            source,
+            node.getStart(ast, false) + 1,
+            node.getStart(ast, false) + 1,
+            '('
+          )
+          replaceSourceRange(
+            codes,
+            source,
+            parent.getEnd(),
+            parent.getEnd(),
+            ')'
+          )
+        }
+      } else if (ts.isIdentifier(node)) {
         replaceSourceRange(
           codes,
           source,
-          node.expression.getStart(ast, false),
-          node.expression.getStart(ast, false) + 2
-        )
-      } else if (ts.isVariableDeclaration(parent)) {
-        replaceSourceRange(
-          codes,
-          source,
-          node.expression.getStart(ast, false) + 1,
-          node.expression.getStart(ast, false) + 1,
-          '('
+          node.getStart(ast, false) + 1,
+          node.getStart(ast, false) + 1,
+          '$('
         )
         replaceSourceRange(codes, source, node.end, node.end, ')')
-      } else {
-        replaceSourceRange(
-          codes,
-          source,
-          node.expression.getStart(ast, false),
-          node.expression.getStart(ast, false) + 1
-        )
       }
-
-      node.arguments.forEach((argument) => {
-        transformArguments(argument)
-      })
     }
 
     node.forEachChild((child) => {
       walkReactivityFunction(child, node)
     })
   }
-
   ast.forEachChild((child) => walkReactivityFunction(child, ast))
 }
 
