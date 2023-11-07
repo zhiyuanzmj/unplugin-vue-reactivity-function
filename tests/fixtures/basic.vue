@@ -12,13 +12,13 @@ function useApi(defaultName = ref('')){
 
 const { id, name } = $useApi()
 id === 1
-$useApi(name)
+useApi($name)
 
-$watch(name,()=>{
+watch($name,()=>{
   
 })
 
-$defineExpose({
+$$defineExpose({
   name,
 })
 </script>
