@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, toRefs, watch } from 'vue'
+import { inject, toRefs, watch } from 'vue'
 import { useBase64 } from '@vueuse/core'
 import { useUserStore } from '../store/user'
 
@@ -8,9 +8,6 @@ login()
 
 const text = $inject('text', $token)
 const { base64 } = $useBase64($text)
-
-const a = $computed(() => 1)
-const b = $(computed(() => 1))
 
 watch($base64, () => {
   console.log(base64)
