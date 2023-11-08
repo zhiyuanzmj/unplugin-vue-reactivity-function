@@ -83,7 +83,7 @@ module.exports = {
 
 ```ts
 // ~/store/user.ts
-export const useUserStore = $$defineStore('user', () => {
+export const useUserStore = defineStore$('user', () => {
   let token = $ref('')
   function login() {
     token = 'TOKEN'
@@ -119,24 +119,20 @@ const { token, login } = $toRefs(useUserStore())
 const { token, login } = $(toRefs(useUserStore()))
 login()
 
-const text = $inject('text', $token)
+const text = $inject$('text', token)
 // is equivalent to:
 const text = $(inject('text', $$(defaultText)))
 
-const { base64 } = $useBase64($text)
+const { base64 } = $useBase64$(text)
 // is equivalent to:
 const { base64 } = $(useBase64($$(text)))
 
-watch($base64, () => {
-  console.log(base64)
-})
+provide$('base64', base64)
 // is equivalent to:
-watch($$(base64), () => {
-  console.log(base64)
-})
+provide('base64', $$(base64))
 
-const stop = $$watch(base64, () => {
-  console.log($base64)
+const stop = watch$(base64, () => {
+  console.log$(base64)
   stop()
 })
 // is equivalent to:
@@ -145,7 +141,7 @@ const stop = watch($$(base64), () => {
   stop()
 })
 
-$$defineExpose({
+defineExpose$({
   base64,
 })
 // is equivalent to:

@@ -95,52 +95,32 @@ function transform({
     node: import('typescript/lib/tsserverlibrary').Node,
     parent: import('typescript/lib/tsserverlibrary').Node
   ) {
-    if (
-      ts.isIdentifier(node) &&
-      /^\$(?!(\$|ref|computed|shallowRef|toRef|customRef|defineProp|defineProps|defineModels)?(\(|$))/.test(
-        node.getText(ast)
-      )
-    ) {
-      if (ts.isCallExpression(parent) && parent.expression === node) {
-        if (node.getText(ast).startsWith('$$')) {
-          replaceSourceRange(
-            codes,
-            source,
-            node.getStart(ast, false),
-            node.getStart(ast, false) + 2
-          )
-          parent.arguments.forEach((argument) => {
-            transformArguments(argument)
-          })
-        } else {
-          replaceSourceRange(
-            codes,
-            source,
-            node.getStart(ast, false) + 1,
-            node.getStart(ast, false) + 1,
-            '('
-          )
-          replaceSourceRange(
-            codes,
-            source,
-            parent.getEnd(),
-            parent.getEnd(),
-            ')'
-          )
-        }
-      } else if (
-        ts.isIdentifier(node) &&
-        !ts.isPropertyAccessExpression(parent) &&
-        !ts.isVariableDeclaration(parent)
+    if (ts.isCallExpression(node)) {
+      if (
+        /^\$(?!(\$|ref|computed|shallowRef|toRef|customRef|defineProp|defineProps|defineModels)?(\(|$))/.test(
+          node.expression.getText(ast)
+        )
       ) {
         replaceSourceRange(
           codes,
           source,
-          node.getStart(ast, false) + 1,
-          node.getStart(ast, false) + 1,
-          '$('
+          node.expression.getStart(ast, false) + 1,
+          node.expression.getStart(ast, false) + 1,
+          '('
         )
-        replaceSourceRange(codes, source, node.end, node.end, ')')
+        replaceSourceRange(codes, source, node.getEnd(), node.getEnd(), ')')
+      }
+
+      if (node.expression.getText(ast).endsWith('$')) {
+        replaceSourceRange(
+          codes,
+          source,
+          node.expression.getEnd() - 1,
+          node.expression.getEnd()
+        )
+        node.arguments.forEach((argument) => {
+          transformArguments(argument)
+        })
       }
     }
 

@@ -96,32 +96,24 @@ function transformReactivityFunction(code: string, id: string) {
 
   for (const { ast, offset } of asts) {
     walkAST<t.Node>(ast, {
-      enter(node, parent) {
+      enter(node) {
+        if (node.type !== 'CallExpression') return
+
         if (
-          node.type === 'Identifier' &&
           /^\$(?!(\$|ref|computed|shallowRef|toRef|customRef|defineProp|defineProps|defineModels)?(\(|$))/.test(
-            s.sliceNode(node, { offset })
+            s.sliceNode(node.callee, { offset })
           )
         ) {
-          if (parent?.type === 'CallExpression' && parent.callee === node) {
-            if (s.sliceNode(node, { offset }).startsWith('$$')) {
-              s.remove(node.start! + offset, node.start! + offset + 2)
+          s.appendRight(node.callee.start! + offset + 1, '(')
+          s.appendRight(node.end! + offset, ')')
+        }
 
-              parent.arguments.forEach((argument) => {
-                transformArguments(argument, s, offset)
-              })
-            } else {
-              s.appendRight(node.start! + offset + 1, '(')
-              s.appendRight(parent.end! + offset, ')')
-            }
-          } else if (
-            node.type === 'Identifier' &&
-            parent?.type !== 'MemberExpression' &&
-            parent?.type !== 'VariableDeclarator'
-          ) {
-            s.appendRight(node.start! + offset + 1, '$(')
-            s.appendRight(node.end! + offset, ')')
-          }
+        if (s.sliceNode(node.callee, { offset }).endsWith('$')) {
+          s.remove(node.callee.end! + offset - 1, node.callee.end! + offset)
+
+          node.arguments.forEach((argument) => {
+            transformArguments(argument, s, offset)
+          })
         }
       },
     })
