@@ -97,7 +97,7 @@ function transform({
   ) {
     if (ts.isCallExpression(node)) {
       if (
-        /^\$(?!(\$|ref|computed|shallowRef|toRef|customRef|defineProp|defineProps|defineModels)?(\(|$))/.test(
+        /^\$(?!(\$|ref|computed|shallowRef|toRef|customRef|defineProp|defineProps|defineModels)?$)/.test(
           node.expression.getText(ast)
         )
       ) {
@@ -111,7 +111,7 @@ function transform({
         replaceSourceRange(codes, source, node.getEnd(), node.getEnd(), ')')
       }
 
-      if (node.expression.getText(ast).endsWith('$')) {
+      if (/(?<!^(\$)?)\$$/.test(node.expression.getText(ast))) {
         replaceSourceRange(
           codes,
           source,

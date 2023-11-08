@@ -100,7 +100,7 @@ function transformReactivityFunction(code: string, id: string) {
         if (node.type !== 'CallExpression') return
 
         if (
-          /^\$(?!(\$|ref|computed|shallowRef|toRef|customRef|defineProp|defineProps|defineModels)?(\(|$))/.test(
+          /^\$(?!(\$|ref|computed|shallowRef|toRef|customRef|defineProp|defineProps|defineModels)?$)/.test(
             s.sliceNode(node.callee, { offset })
           )
         ) {
@@ -108,7 +108,7 @@ function transformReactivityFunction(code: string, id: string) {
           s.appendRight(node.end! + offset, ')')
         }
 
-        if (s.sliceNode(node.callee, { offset }).endsWith('$')) {
+        if (/(?<!^(\$)?)\$$/.test(s.sliceNode(node.callee, { offset }))) {
           s.remove(node.callee.end! + offset - 1, node.callee.end! + offset)
 
           node.arguments.forEach((argument) => {
