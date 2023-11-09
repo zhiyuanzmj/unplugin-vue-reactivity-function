@@ -8,6 +8,7 @@ export type OptionsResolved = Pick<Required<Options>, 'include'> &
 export function resolveOption(options: Options): OptionsResolved {
   return {
     include: [/\.([cm]?[jt]sx?|vue)$/],
+    exclude: [/node_modules/],
     ...options,
   }
 }
