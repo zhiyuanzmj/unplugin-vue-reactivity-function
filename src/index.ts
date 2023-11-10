@@ -66,7 +66,11 @@ function transformFunctionReturn(node: t.Node, s: MagicString, offset: number) {
     }
 }
 
-function transformReactivityFunction(code: string, id: string) {
+function transformReactivityFunction(
+  code: string,
+  id: string,
+  ignore: string[]
+) {
   const lang = getLang(id)
   let asts: {
     ast: t.Program
@@ -100,7 +104,7 @@ function transformReactivityFunction(code: string, id: string) {
         if (node.type !== 'CallExpression') return
 
         if (
-          /^\$(?!(\$|ref|computed|shallowRef|toRef|customRef|defineProp|defineProps|defineModels)?$)/.test(
+          new RegExp(`^\\$(?!(\\$|${ignore.join('|')})?$)`).test(
             s.sliceNode(node.callee, { offset })
           )
         ) {
@@ -135,7 +139,7 @@ export default createUnplugin<Options | undefined, false>((rawOptions = {}) => {
       return filter(id)
     },
     transform(code, id) {
-      return transformReactivityFunction(code, id)
+      return transformReactivityFunction(code, id, options.ignore)
     },
   }
 })

@@ -18,7 +18,11 @@ npm i -D unplugin-vue-reactivity-function
 import VueReactivityFunction from 'unplugin-vue-reactivity-function/vite'
 
 export default defineConfig({
-  plugins: [VueReactivityFunction()],
+  plugins: [
+    VueReactivityFunction({
+      ignore: ['$fetch'],
+    }),
+  ],
 })
 ```
 
@@ -32,7 +36,11 @@ export default defineConfig({
 import VueReactivityFunction from 'unplugin-vue-reactivity-function/rollup'
 
 export default {
-  plugins: [VueReactivityFunction()],
+  plugins: [
+    VueReactivityFunction({
+      ignore: ['$fetch'],
+    }),
+  ],
 }
 ```
 
@@ -46,7 +54,11 @@ export default {
 import { build } from 'esbuild'
 
 build({
-  plugins: [require('unplugin-vue-reactivity-function/esbuild')()],
+  plugins: [
+    require('unplugin-vue-reactivity-function/esbuild')({
+      ignore: ['$fetch'],
+    }),
+  ],
 })
 ```
 
@@ -59,7 +71,11 @@ build({
 // webpack.config.js
 module.exports = {
   /* ... */
-  plugins: [require('unplugin-vue-reactivity-function/webpack')()],
+  plugins: [
+    require('unplugin-vue-reactivity-function/webpack')({
+      ignore: ['$fetch'],
+    }),
+  ],
 }
 ```
 
@@ -72,7 +88,11 @@ module.exports = {
 // vue.config.js
 module.exports = {
   configureWebpack: {
-    plugins: [require('unplugin-vue-reactivity-function/webpack')()],
+    plugins: [
+      require('unplugin-vue-reactivity-function/webpack')({
+        ignore: ['$fetch'],
+      }),
+    ],
   },
 }
 ```
@@ -158,7 +178,10 @@ defineExpose({
 {
   // ...
   "vueCompilerOptions": {
-    "plugins": ["unplugin-vue-reactivity-function/volar"]
+    "plugins": ["unplugin-vue-reactivity-function/volar"],
+    "reactivityFunction": {
+      "ignore": ["$fetch"]
+    }
   }
 }
 ```

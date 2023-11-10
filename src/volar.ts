@@ -5,17 +5,20 @@ import {
   type VueLanguagePlugin,
   replaceSourceRange,
 } from '@vue/language-core'
+import { ignore } from './core/options'
 
 function transform({
   codes,
   ast,
   ts,
   source,
+  ignore,
 }: {
   codes: Segment<FileRangeCapabilities>[]
   ast: import('typescript/lib/tsserverlibrary').SourceFile
   ts: typeof import('typescript/lib/tsserverlibrary')
   source: 'script' | 'scriptSetup'
+  ignore: string[]
 }) {
   function transformArguments(
     argument: import('typescript/lib/tsserverlibrary').Node
@@ -92,12 +95,11 @@ function transform({
   }
 
   function walkReactivityFunction(
-    node: import('typescript/lib/tsserverlibrary').Node,
-    parent: import('typescript/lib/tsserverlibrary').Node
+    node: import('typescript/lib/tsserverlibrary').Node
   ) {
     if (ts.isCallExpression(node)) {
       if (
-        /^\$(?!(\$|ref|computed|shallowRef|toRef|customRef|defineProp|defineProps|defineModels)?$)/.test(
+        new RegExp(`^\\$(?!(\\$|${ignore.join('|')})?$)`).test(
           node.expression.getText(ast)
         )
       ) {
@@ -125,13 +127,16 @@ function transform({
     }
 
     node.forEachChild((child) => {
-      walkReactivityFunction(child, node)
+      walkReactivityFunction(child)
     })
   }
-  ast.forEachChild((child) => walkReactivityFunction(child, ast))
+  ast.forEachChild(walkReactivityFunction)
 }
 
-const plugin: VueLanguagePlugin = ({ modules: { typescript: ts } }) => {
+const plugin: VueLanguagePlugin = ({
+  modules: { typescript: ts },
+  vueCompilerOptions,
+}) => {
   return {
     name: 'vue-reactivity-function',
     version: 1,
@@ -145,6 +150,12 @@ const plugin: VueLanguagePlugin = ({ modules: { typescript: ts } }) => {
             ast: sfc[source]!.ast,
             ts,
             source,
+            ignore: [
+              ...ignore,
+              ...(vueCompilerOptions.reactivityFunction?.ignore || []).map(
+                (str) => str.slice(1)
+              ),
+            ],
           })
         }
       }

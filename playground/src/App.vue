@@ -10,7 +10,10 @@ const text = $inject$('text', token)
 const { base64 } = $useBase64$(text)
 provide$('base64', base64)
 
+const $fetch = fetch
+
 const stop = watch$(base64, () => {
+  $fetch('')
   console.log$(base64)
   stop()
 })

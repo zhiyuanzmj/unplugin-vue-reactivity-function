@@ -1,14 +1,32 @@
-import type { BaseOptions } from '@vue-macros/common'
+import {
+  type BaseOptions,
+  REGEX_NODE_MODULES,
+  REGEX_SUPPORTED_EXT,
+} from '@vue-macros/common'
 
-export interface Options extends Pick<BaseOptions, 'include' | 'exclude'> {}
+export interface Options extends Pick<BaseOptions, 'include' | 'exclude'> {
+  ignore?: string[]
+}
 
-export type OptionsResolved = Pick<Required<Options>, 'include'> &
+export type OptionsResolved = Pick<Required<Options>, 'include' | 'ignore'> &
   Pick<Options, 'exclude'>
+
+export const ignore = [
+  'ref',
+  'computed',
+  'shallowRef',
+  'toRef',
+  'customRef',
+  'defineProp',
+  'defineProps',
+  'defineModels',
+]
 
 export function resolveOption(options: Options): OptionsResolved {
   return {
-    include: [/\.([cm]?[jt]sx?|vue)$/],
-    exclude: [/node_modules/],
+    include: [REGEX_SUPPORTED_EXT],
+    exclude: [REGEX_NODE_MODULES],
     ...options,
+    ignore: [...ignore, ...(options.ignore || []).map((str) => str.slice(1))],
   }
 }

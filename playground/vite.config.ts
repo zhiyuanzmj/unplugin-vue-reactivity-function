@@ -9,13 +9,11 @@ export default defineConfig({
   },
   plugins: [
     Vue({
-      include: [/\.vue$/],
       reactivityTransform: true,
-      script: {
-        hoistStatic: false,
-      },
     }),
-    VueReactivityFunction(),
+    VueReactivityFunction({
+      ignore: ['$fetch'],
+    }),
     Inspect({
       build: true,
     }),
