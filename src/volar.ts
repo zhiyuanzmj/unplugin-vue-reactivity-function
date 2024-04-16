@@ -1,7 +1,5 @@
 import {
-  FileKind,
-  type FileRangeCapabilities,
-  type Segment,
+  type Code,
   type VueLanguagePlugin,
   replaceSourceRange,
 } from '@vue/language-core'
@@ -14,15 +12,13 @@ function transform({
   source,
   ignore,
 }: {
-  codes: Segment<FileRangeCapabilities>[]
-  ast: import('typescript/lib/tsserverlibrary').SourceFile
-  ts: typeof import('typescript/lib/tsserverlibrary')
+  codes: Code[]
+  ast: import('typescript').SourceFile
+  ts: typeof import('typescript')
   source: 'script' | 'scriptSetup'
   ignore: string[]
 }) {
-  function transformArguments(
-    argument: import('typescript/lib/tsserverlibrary').Node
-  ) {
+  function transformArguments(argument: import('typescript').Node) {
     if (
       ts.isIdentifier(argument) ||
       ts.isPropertyAccessExpression(argument) ||
@@ -74,9 +70,7 @@ function transform({
     }
   }
 
-  function transformFunctionReturn(
-    node: import('typescript/lib/tsserverlibrary').Node
-  ) {
+  function transformFunctionReturn(node: import('typescript').Node) {
     if (
       ts.isArrowFunction(node) ||
       ts.isFunctionExpression(node) ||
@@ -94,9 +88,7 @@ function transform({
     }
   }
 
-  function walkReactivityFunction(
-    node: import('typescript/lib/tsserverlibrary').Node
-  ) {
+  function walkReactivityFunction(node: import('typescript').Node) {
     if (ts.isCallExpression(node)) {
       if (
         new RegExp(`^\\$(?!(\\$|${ignore.join('|')})?$)`).test(
@@ -139,10 +131,8 @@ const plugin: VueLanguagePlugin = ({
 }) => {
   return {
     name: 'vue-reactivity-function',
-    version: 1,
-    resolveEmbeddedFile(fileName, sfc, embeddedFile) {
-      if (embeddedFile.kind !== FileKind.TypeScriptHostFile) return
-
+    version: 2,
+    resolveEmbeddedCode(fileName, sfc, embeddedFile) {
       for (const source of ['script', 'scriptSetup'] as const) {
         if (sfc[source]?.ast) {
           transform({
