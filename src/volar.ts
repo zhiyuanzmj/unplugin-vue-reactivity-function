@@ -133,6 +133,9 @@ const plugin: VueLanguagePlugin = ({
     name: 'vue-reactivity-function',
     version: 2,
     resolveEmbeddedCode(fileName, sfc, embeddedFile) {
+      vueCompilerOptions.macros.defineModel.push('$defineModel')
+      vueCompilerOptions.macros.defineExpose.push('defineExpose$')
+
       for (const source of ['script', 'scriptSetup'] as const) {
         if (sfc[source]?.ast) {
           transform({
