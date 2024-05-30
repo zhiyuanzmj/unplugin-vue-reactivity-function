@@ -1,8 +1,9 @@
 {
   "name": "unplugin-vue-reactivity-function",
   "version": "0.2.1",
-  "packageManager": "pnpm@8.10.0",
+  "packageManager": "pnpm@9.0.13",
   "description": "Reactivity function.",
+  "type": "module",
   "keywords": [
     "unplugin",
     "rollup",
@@ -23,33 +24,33 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
     },
     "./vite": {
-      "require": "./dist/vite.js",
+      "require": "./dist/vite.cjs",
       "import": "./dist/vite.mjs"
     },
     "./webpack": {
-      "require": "./dist/webpack.js",
-      "import": "./dist/webpack.mjs"
+      "require": "./dist/webpack.cjs",
+      "import": "./dist/webpack.js"
     },
     "./rollup": {
-      "require": "./dist/rollup.js",
-      "import": "./dist/rollup.mjs"
+      "require": "./dist/rollup.cjs",
+      "import": "./dist/rollup.js"
     },
     "./esbuild": {
-      "require": "./dist/esbuild.js",
-      "import": "./dist/esbuild.mjs"
+      "require": "./dist/esbuild.cjs",
+      "import": "./dist/esbuild.js"
     },
     "./volar": {
-      "require": "./dist/volar.js",
-      "import": "./dist/volar.mjs"
+      "require": "./dist/volar.cjs",
+      "import": "./dist/volar.js"
     },
     "./*": "./*"
   },
@@ -75,29 +76,29 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@vue-macros/common": "^1.10.2",
+    "@vue-macros/common": "^1.10.4",
+    "@vue/language-core": "^2.0.19",
     "unplugin": "^1.10.1"
   },
   "devDependencies": {
-    "@babel/types": "^7.24.0",
-    "@sxzz/eslint-config": "^3.9.1",
-    "@sxzz/prettier-config": "^2.0.1",
-    "@types/node": "^20.12.7",
-    "@vue-macros/reactivity-transform": "^0.4.4",
+    "@babel/types": "^7.24.6",
+    "@sxzz/eslint-config": "^3.11.0",
+    "@sxzz/prettier-config": "^2.0.2",
+    "@types/node": "^20.12.13",
+    "@vue-macros/reactivity-transform": "^0.4.6",
     "@vue-macros/test-utils": "^1.4.0",
-    "@vue/language-core": "^2.0.13",
-    "bumpp": "^9.4.0",
+    "bumpp": "^9.4.1",
     "change-case": "^5.4.4",
-    "eslint": "^9.0.0",
+    "eslint": "^9.3.0",
     "eslint-define-config": "^2.1.0",
     "fast-glob": "^3.3.2",
     "prettier": "^3.2.5",
     "tsup": "^8.0.2",
-    "tsx": "^4.7.2",
+    "tsx": "^4.11.0",
     "typescript": "^5.4.5",
-    "vite": "^5.2.9",
-    "vitest": "^1.5.0",
-    "vue": "^3.4.22"
+    "vite": "^5.2.12",
+    "vitest": "^1.6.0",
+    "vue": "^3.4.27"
   },
   "engines": {
     "node": ">=16.14.0"

@@ -29,14 +29,14 @@ function transform({
         source,
         argument.getStart(ast, false),
         argument.getStart(ast, false),
-        '$$('
+        '$$(',
       )
       replaceSourceRange(
         codes,
         source,
         argument.getEnd(),
         argument.getEnd(),
-        ')'
+        ')',
       )
     } else if (
       ts.isArrowFunction(argument) ||
@@ -54,14 +54,14 @@ function transform({
             source,
             prop.name.getStart(ast, false),
             prop.name.getStart(ast, false),
-            `${prop.name.escapedText}: $$(`
+            `${prop.name.escapedText}: $$(`,
           )
           replaceSourceRange(
             codes,
             source,
             prop.name.getEnd(),
             prop.name.getEnd(),
-            ')'
+            ')',
           )
         } else if (ts.isPropertyAssignment(prop)) {
           transformArguments(prop.initializer)
@@ -92,7 +92,7 @@ function transform({
     if (ts.isCallExpression(node)) {
       if (
         new RegExp(`^\\$(?!(\\$|${ignore.join('|')})?$)`).test(
-          node.expression.getText(ast)
+          node.expression.getText(ast),
         )
       ) {
         replaceSourceRange(
@@ -100,7 +100,7 @@ function transform({
           source,
           node.expression.getStart(ast, false) + 1,
           node.expression.getStart(ast, false) + 1,
-          '('
+          '(',
         )
         replaceSourceRange(codes, source, node.getEnd(), node.getEnd(), ')')
       }
@@ -110,7 +110,7 @@ function transform({
           codes,
           source,
           node.expression.getEnd() - 1,
-          node.expression.getEnd()
+          node.expression.getEnd(),
         )
         node.arguments.forEach((argument) => {
           transformArguments(argument)
@@ -146,7 +146,7 @@ const plugin: VueLanguagePlugin = ({
             ignore: [
               ...ignore,
               ...(vueCompilerOptions.reactivityFunction?.ignore || []).map(
-                (str) => str.slice(1)
+                (str) => str.slice(1),
               ),
             ],
           })

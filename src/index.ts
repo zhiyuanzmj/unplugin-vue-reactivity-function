@@ -1,6 +1,7 @@
 import { createUnplugin } from 'unplugin'
 import {
-  MagicString,
+  type MagicString,
+  MagicStringAST,
   REGEX_SETUP_SFC,
   REGEX_SRC_FILE,
   babelParse,
@@ -40,7 +41,7 @@ function transformArguments(argument: t.Node, s: MagicString, offset: number) {
         if (prop.shorthand) {
           s.appendLeft(
             prop.value.start! + offset,
-            `${prop.key.loc?.identifierName}: `
+            `${prop.key.loc?.identifierName}: `,
           )
         }
         transformArguments(prop.value, s, offset)
@@ -69,7 +70,7 @@ function transformFunctionReturn(node: t.Node, s: MagicString, offset: number) {
 function transformReactivityFunction(
   code: string,
   id: string,
-  ignore: string[]
+  ignore: string[],
 ) {
   const lang = getLang(id)
   let asts: {
@@ -79,7 +80,7 @@ function transformReactivityFunction(
   if (lang === 'vue' || REGEX_SETUP_SFC.test(id)) {
     const { scriptSetup, getSetupAst, script, getScriptAst } = parseSFC(
       code,
-      id
+      id,
     )
     if (script) {
       asts.push({ ast: getScriptAst()!, offset: script.loc.start.offset })
@@ -96,7 +97,7 @@ function transformReactivityFunction(
     return
   }
 
-  const s = new MagicString(code)
+  const s = new MagicStringAST(code)
 
   for (const { ast, offset } of asts) {
     walkAST<t.Node>(ast, {
@@ -105,7 +106,7 @@ function transformReactivityFunction(
 
         if (
           new RegExp(`^\\$(?!(\\$|${ignore.join('|')})?$)`).test(
-            s.sliceNode(node.callee, { offset })
+            s.sliceNode(node.callee, { offset }),
           )
         ) {
           s.appendRight(node.callee.start! + offset + 1, '(')
