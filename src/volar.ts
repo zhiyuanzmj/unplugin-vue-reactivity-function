@@ -1,9 +1,6 @@
-import {
-  type Code,
-  type VueLanguagePlugin,
-  replaceSourceRange,
-} from '@vue/language-core'
+import { replaceSourceRange } from 'muggle-string'
 import { ignore } from './core/options'
+import type { Code, VueLanguagePlugin } from '@vue/language-core'
 
 function transform({
   codes,
@@ -27,24 +24,18 @@ function transform({
       replaceSourceRange(
         codes,
         source,
-        argument.getStart(ast, false),
-        argument.getStart(ast, false),
+        getStart(argument, ast, ts),
+        getStart(argument, ast, ts),
         '$$(',
       )
-      replaceSourceRange(
-        codes,
-        source,
-        argument.getEnd(),
-        argument.getEnd(),
-        ')',
-      )
+      replaceSourceRange(codes, source, argument.end, argument.end, ')')
     } else if (
       ts.isArrowFunction(argument) ||
       ts.isFunctionExpression(argument)
     ) {
       transformFunctionReturn(argument)
     } else if (ts.isArrayLiteralExpression(argument)) {
-      argument.forEachChild((arg) => transformArguments(arg))
+      ts.forEachChild(argument, (arg) => transformArguments(arg))
     } else if (ts.isObjectLiteralExpression(argument)) {
       argument.properties.forEach((prop) => {
         // { foo } => { foo: $$(foo) }
@@ -52,17 +43,11 @@ function transform({
           replaceSourceRange(
             codes,
             source,
-            prop.name.getStart(ast, false),
-            prop.name.getStart(ast, false),
+            getStart(prop.name, ast, ts),
+            getStart(prop.name, ast, ts),
             `${prop.name.escapedText}: $$(`,
           )
-          replaceSourceRange(
-            codes,
-            source,
-            prop.name.getEnd(),
-            prop.name.getEnd(),
-            ')',
-          )
+          replaceSourceRange(codes, source, prop.name.end, prop.name.end, ')')
         } else if (ts.isPropertyAssignment(prop)) {
           transformArguments(prop.initializer)
         }
@@ -78,8 +63,8 @@ function transform({
     ) {
       if (ts.isArrowFunction(node) && !ts.isBlock(node.body)) {
         transformArguments(node.body)
-      } else {
-        node.body?.forEachChild((statement) => {
+      } else if (node.body) {
+        ts.forEachChild(node.body, (statement) => {
           if (ts.isReturnStatement(statement) && statement.expression) {
             transformArguments(statement.expression)
           }
@@ -92,25 +77,25 @@ function transform({
     if (ts.isCallExpression(node)) {
       if (
         new RegExp(`^\\$(?!(\\$|${ignore.join('|')})?$)`).test(
-          node.expression.getText(ast),
+          getText(node.expression, ast, ts),
         )
       ) {
         replaceSourceRange(
           codes,
           source,
-          node.expression.getStart(ast, false) + 1,
-          node.expression.getStart(ast, false) + 1,
+          getStart(node.expression, ast, ts) + 1,
+          getStart(node.expression, ast, ts) + 1,
           '(',
         )
-        replaceSourceRange(codes, source, node.getEnd(), node.getEnd(), ')')
+        replaceSourceRange(codes, source, node.end, node.end, ')')
       }
 
-      if (/(?<!^(\$)?)\$$/.test(node.expression.getText(ast))) {
+      if (/(?<!^(\$)?)\$$/.test(getText(node.expression, ast, ts))) {
         replaceSourceRange(
           codes,
           source,
-          node.expression.getEnd() - 1,
-          node.expression.getEnd(),
+          node.expression.end - 1,
+          node.expression.end,
         )
         node.arguments.forEach((argument) => {
           transformArguments(argument)
@@ -118,11 +103,11 @@ function transform({
       }
     }
 
-    node.forEachChild((child) => {
+    ts.forEachChild(node, (child) => {
       walkReactivityFunction(child)
     })
   }
-  ast.forEachChild(walkReactivityFunction)
+  ts.forEachChild(ast, walkReactivityFunction)
 }
 
 const plugin: VueLanguagePlugin = ({
@@ -131,7 +116,7 @@ const plugin: VueLanguagePlugin = ({
 }) => {
   return {
     name: 'vue-reactivity-function',
-    version: 2,
+    version: 2.1,
     resolveEmbeddedCode(fileName, sfc, embeddedFile) {
       vueCompilerOptions.macros.defineModel.push('$defineModel')
       vueCompilerOptions.macros.defineExpose.push('defineExpose$')
@@ -158,3 +143,19 @@ const plugin: VueLanguagePlugin = ({
 
 // eslint-disable-next-line import/no-default-export
 export default plugin
+
+function getStart(
+  node: import('typescript').Node,
+  ast: import('typescript').SourceFile,
+  ts: typeof import('typescript'),
+): number {
+  return (ts as any).getTokenPosOfNode(node, ast)
+}
+
+function getText(
+  node: import('typescript').Node,
+  ast: import('typescript').SourceFile,
+  ts: typeof import('typescript'),
+): string {
+  return ast.text.slice(getStart(node, ast, ts), node.end)
+}

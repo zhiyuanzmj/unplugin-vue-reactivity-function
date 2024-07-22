@@ -1,12 +1,12 @@
 <script setup lang="tsx">
 import { ref, watch } from 'vue'
 
-function useApi(defaultName = ref('')){
+function useApi(defaultName = ref('')) {
   const id = ref(1)
   const name = ref(defaultName)
   return {
     id,
-    name
+    name,
   }
 }
 
@@ -14,9 +14,7 @@ const { id, name } = $useApi()
 id === 1
 useApi$(name)
 
-watch$(name,()=>{
-  
-})
+watch$(name, () => {})
 
 defineExpose$({
   name,

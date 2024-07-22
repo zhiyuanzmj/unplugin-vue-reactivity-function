@@ -77,28 +77,29 @@
   },
   "dependencies": {
     "@vue-macros/common": "^1.10.4",
-    "@vue/language-core": "^2.0.19",
-    "unplugin": "^1.10.1"
+    "@vue/language-core": "^2.0.28",
+    "muggle-string": "^0.4.1",
+    "unplugin": "^1.11.0"
   },
   "devDependencies": {
-    "@babel/types": "^7.24.6",
-    "@sxzz/eslint-config": "^3.11.0",
+    "@babel/types": "^7.24.9",
+    "@sxzz/eslint-config": "^3.14.0",
     "@sxzz/prettier-config": "^2.0.2",
-    "@types/node": "^20.12.13",
+    "@types/node": "^20.14.11",
     "@vue-macros/reactivity-transform": "^0.4.6",
     "@vue-macros/test-utils": "^1.4.0",
     "bumpp": "^9.4.1",
     "change-case": "^5.4.4",
-    "eslint": "^9.3.0",
+    "eslint": "^9.7.0",
     "eslint-define-config": "^2.1.0",
     "fast-glob": "^3.3.2",
-    "prettier": "^3.2.5",
-    "tsup": "^8.0.2",
-    "tsx": "^4.11.0",
-    "typescript": "^5.4.5",
-    "vite": "^5.2.12",
-    "vitest": "^1.6.0",
-    "vue": "^3.4.27"
+    "prettier": "^3.3.3",
+    "tsup": "^8.2.2",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.4",
+    "vitest": "^2.0.3",
+    "vue": "^3.4.33"
   },
   "engines": {
     "node": ">=16.14.0"
