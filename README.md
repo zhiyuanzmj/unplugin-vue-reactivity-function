@@ -115,7 +115,7 @@ export const useUserStore = defineStore$('user', () => {
   }
 })
 
-// is equivalent to:
+// convert to:
 export const useUserStore = defineStore('user', () => {
   let token = $ref('')
   function login() {
@@ -135,27 +135,27 @@ import { useBase64 } from '@vueuse/core'
 import { useUserStore } from '~/store/user'
 
 const { token, login } = $toRefs(useUserStore())
-// is equivalent to:
+// convert to:
 const { token, login } = $(toRefs(useUserStore()))
 login()
 
 const text = $inject$('text', token)
-// is equivalent to:
+// convert to:
 const text = $(inject('text', $$(defaultText)))
 
 const { base64 } = $useBase64$(text)
-// is equivalent to:
+// convert to:
 const { base64 } = $(useBase64($$(text)))
 
 provide$('base64', base64)
-// is equivalent to:
+// convert to:
 provide('base64', $$(base64))
 
 const stop = watch$(base64, () => {
   console.log$(base64)
   stop()
 })
-// is equivalent to:
+// convert to:
 const stop = watch($$(base64), () => {
   console.log($$(base64))
   stop()
@@ -164,7 +164,7 @@ const stop = watch($$(base64), () => {
 defineExpose$({
   base64,
 })
-// is equivalent to:
+// convert to:
 defineExpose({
   base64: $$(base64),
 })
@@ -180,9 +180,9 @@ defineExpose({
   "vueCompilerOptions": {
     "plugins": ["unplugin-vue-reactivity-function/volar"],
     "reactivityFunction": {
-      "ignore": ["$fetch"]
-    }
-  }
+      "ignore": ["$fetch"],
+    },
+  },
 }
 ```
 
