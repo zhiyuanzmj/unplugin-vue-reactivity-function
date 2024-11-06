@@ -171,7 +171,7 @@ defineExpose({
 </script>
 ```
 
-### Volar
+### Volar Config
 
 ```jsonc
 // tsconfig.json
@@ -183,6 +183,20 @@ defineExpose({
       "ignore": ["$fetch"],
     },
   },
+}
+```
+
+### [TS Macro](https://github.com/ts-macro/ts-macro) Config
+
+```ts [tsm.config.json]
+import reactivityFunction from 'unplugin-vue-reactivity-function/volar'
+
+export default {
+  plugins: [
+    reactivityFunction({
+      ignore: ['$fetch'],
+    }),
+  ],
 }
 ```
 
