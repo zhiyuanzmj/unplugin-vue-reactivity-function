@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { defineConfig } from 'tsup'
 
 export default defineConfig({
@@ -6,6 +7,7 @@ export default defineConfig({
   target: 'node16.14',
   splitting: true,
   cjsInterop: true,
+  minify: process.argv.includes('--minify'),
   clean: true,
   dts: true,
 })

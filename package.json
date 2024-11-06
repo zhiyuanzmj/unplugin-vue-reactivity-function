@@ -68,7 +68,7 @@
   "scripts": {
     "lint": "eslint --cache .",
     "lint:fix": "pnpm run lint --fix",
-    "build": "tsup",
+    "build": "tsup --minify",
     "dev": "tsup --watch",
     "test": "vitest",
     "play": "pnpm run -C ./playground dev",
