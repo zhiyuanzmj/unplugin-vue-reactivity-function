@@ -1,6 +1,6 @@
 import { replaceSourceRange } from 'muggle-string'
+import { type Code, createPlugin } from 'ts-macro'
 import { ignore } from './core/options'
-import type { Code, VueLanguagePlugin } from '@vue/language-core'
 
 function transform({
   codes,
@@ -12,7 +12,7 @@ function transform({
   codes: Code[]
   ast: import('typescript').SourceFile
   ts: typeof import('typescript')
-  source: 'script' | 'scriptSetup'
+  source: 'script' | 'scriptSetup' | undefined
   ignore: string[]
 }) {
   function transformArguments(argument: import('typescript').Node) {
@@ -110,42 +110,38 @@ function transform({
   ts.forEachChild(ast, walkReactivityFunction)
 }
 
-const plugin: VueLanguagePlugin = ({
-  modules: { typescript: ts },
-  vueCompilerOptions,
-}) => {
-  return {
-    name: 'vue-reactivity-function',
-    version: 2.1,
-    resolveEmbeddedCode(fileName, sfc, embeddedFile) {
-      vueCompilerOptions.macros.defineModel.push('$defineModel')
-      vueCompilerOptions.macros.defineExpose.push('defineExpose$')
-
-      for (const source of ['script', 'scriptSetup'] as const) {
-        if (sfc[source]?.ast) {
-          transform({
-            codes: embeddedFile.content,
-            ast: sfc[source]!.ast,
-            ts,
-            source,
-            ignore: [
-              ...ignore,
-              ...(vueCompilerOptions.reactivityFunction?.ignore || []).map(
-                (str) => str.slice(1),
-              ),
-            ],
-          })
+const plugin = createPlugin<{ ignore?: string[] } | undefined>(
+  ({ ts, vueCompilerOptions }, options) => {
+    return {
+      name: 'vue-reactivity-function',
+      resolveVirtualCode({ ast, source, codes }) {
+        if (vueCompilerOptions) {
+          vueCompilerOptions.macros.defineModel.push('$defineModel')
+          vueCompilerOptions.macros.defineExpose.push('defineExpose$')
         }
-      }
-    },
-  }
-}
+
+        transform({
+          codes,
+          ast,
+          ts,
+          source,
+          ignore: [
+            ...ignore,
+            ...(options?.ignore || []).map((str) => str.slice(1)),
+          ],
+        })
+      },
+    }
+  },
+)
 
 // eslint-disable-next-line import/no-default-export
 export default plugin
 
 function getStart(
-  node: import('typescript').Node,
+  node:
+    | import('typescript').Node
+    | import('typescript').NodeArray<import('typescript').Node>,
   ast: import('typescript').SourceFile,
   ts: typeof import('typescript'),
 ): number {
@@ -157,5 +153,5 @@ function getText(
   ast: import('typescript').SourceFile,
   ts: typeof import('typescript'),
 ): string {
-  return ast.text.slice(getStart(node, ast, ts), node.end)
+  return ast!.text.slice(getStart(node, ast, ts), node.end)
 }
