@@ -15,8 +15,8 @@ importers:
         specifier: ^0.4.1
         version: 0.4.1
       ts-macro:
-        specifier: ^0.0.5
-        version: 0.0.5(typescript@5.6.3)
+        specifier: ^0.1.5
+        version: 0.1.5(rollup@4.19.0)(typescript@5.6.3)
       unplugin:
         specifier: ^1.11.0
         version: 1.11.0
@@ -774,6 +774,15 @@ packages:
       rollup:
         optional: true
 
+  '@rollup/pluginutils@5.1.3':
+    resolution: {integrity: sha512-Pnsb6f32CD2W3uCaLZIzDmeFyQ2b8UWMFI7xtwUezpcGBDVDW6y9XgAWIlARiGAo6eNF5FK5aQTr0LFyNyqq5A==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+
   '@rollup/rollup-android-arm-eabi@4.19.0':
     resolution: {integrity: sha512-JlPfZ/C7yn5S5p0yKk7uhHTTnFlvTgLetl2VxqE518QgyM7C9bSfFTYvB/Q/ftkq0RIPY4ySxTz+/wKJ/dXC0w==}
     cpu: [arm]
@@ -996,9 +1005,6 @@ packages:
 
   '@volar/source-map@2.4.8':
     resolution: {integrity: sha512-jeWJBkC/WivdelMwxKkpFL811uH/jJ1kVxa+c7OvG48DXc3VrP7pplSWPP2W1dLMqBxD+awRlg55FQQfiup4cA==}
-
-  '@volar/typescript@2.4.8':
-    resolution: {integrity: sha512-6xkIYJ5xxghVBhVywMoPMidDDAFT1OoQeXwa27HSgJ6AiIKRe61RXLoik+14Z7r0JvnblXVsjsRLmCr42SGzqg==}
 
   '@vue-macros/common@1.10.4':
     resolution: {integrity: sha512-akO6Bd6U4jP0+ZKbHq6mbYkw1coOrJpLeVmkuMlUsT5wZRi11BjauGcZHusBSzUjgCBsa1kZTyipxrxrWB54Hw==}
@@ -2159,6 +2165,10 @@ packages:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
 
+  picomatch@4.0.2:
+    resolution: {integrity: sha512-M7BAV6Rlcy5u+m6oPhAPFgJTzAioX/6B0DxyvDlo9l8+T3nLKbrczg2WLUyzd45L8RqfUMyGPzekbMvX2Ldkwg==}
+    engines: {node: '>=12'}
+
   pirates@4.0.6:
     resolution: {integrity: sha512-saLsH7WeYYPiD25LDuLRRY/i+6HaPYr6G1OUlN39otzkSTxKnubR9RTxS3/Kk50s1g2JTgFwWQDQyplC5/SHZg==}
     engines: {node: '>= 6'}
@@ -2473,8 +2483,8 @@ packages:
   ts-interface-checker@0.1.13:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
 
-  ts-macro@0.0.5:
-    resolution: {integrity: sha512-o/M5c7+/ehLsU/Ag0zQeClLbjiUdW0sdWh5V9A7mvaIin4i4Mn40sjrRs/0Wnp++4W8q0fWo3Q/bC4qkgwj8cw==}
+  ts-macro@0.1.5:
+    resolution: {integrity: sha512-rl3lfpWHx9Z+YNfXoZsQH2G3Qrvo3oOzfnUL0p3ewp7mRIv50vjUb5y2WhSQi/pSdudbQ5EFEzZ33qbnMS2GUg==}
 
   tslib@2.6.3:
     resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
@@ -2635,9 +2645,6 @@ packages:
         optional: true
       jsdom:
         optional: true
-
-  vscode-uri@3.0.8:
-    resolution: {integrity: sha512-AyFQ0EVmsOZOlAnxoFOGOq1SQDWAB7C6aqMGS23svWAllfOaxbuFvcT8D1i8z3Gyn8fraVeZNNmN6e9bxxXkKw==}
 
   vue-eslint-parser@9.4.3:
     resolution: {integrity: sha512-2rYRLWlIpaiN8xbPiDyXZXRgLGOtWxERV7ND5fFAv5qo1D2N9Fu9MNajBNc6o13lZ+24DAWCkQCvj4klgmcITg==}
@@ -3269,6 +3276,14 @@ snapshots:
     optionalDependencies:
       rollup: 4.19.0
 
+  '@rollup/pluginutils@5.1.3(rollup@4.19.0)':
+    dependencies:
+      '@types/estree': 1.0.5
+      estree-walker: 2.0.2
+      picomatch: 4.0.2
+    optionalDependencies:
+      rollup: 4.19.0
+
   '@rollup/rollup-android-arm-eabi@4.19.0':
     optional: true
 
@@ -3531,12 +3546,6 @@ snapshots:
       '@volar/source-map': 2.4.8
 
   '@volar/source-map@2.4.8': {}
-
-  '@volar/typescript@2.4.8':
-    dependencies:
-      '@volar/language-core': 2.4.8
-      path-browserify: 1.0.1
-      vscode-uri: 3.0.8
 
   '@vue-macros/common@1.10.4(rollup@4.19.0)(vue@3.4.33(typescript@5.6.3))':
     dependencies:
@@ -4527,7 +4536,8 @@ snapshots:
 
   jiti@1.21.6: {}
 
-  jiti@2.4.0: {}
+  jiti@2.4.0:
+    optional: true
 
   joycon@3.1.1: {}
 
@@ -4823,6 +4833,8 @@ snapshots:
 
   picomatch@2.3.1: {}
 
+  picomatch@4.0.2: {}
+
   pirates@4.0.6: {}
 
   pkg-types@1.1.3:
@@ -5116,15 +5128,14 @@ snapshots:
 
   ts-interface-checker@0.1.13: {}
 
-  ts-macro@0.0.5(typescript@5.6.3):
+  ts-macro@0.1.5(rollup@4.19.0)(typescript@5.6.3):
     dependencies:
+      '@rollup/pluginutils': 5.1.3(rollup@4.19.0)
       '@volar/language-core': 2.4.8
-      '@volar/typescript': 2.4.8
       '@vue/language-core': 2.1.10(typescript@5.6.3)
-      jiti: 2.4.0
       muggle-string: 0.4.1
-      vscode-uri: 3.0.8
     transitivePeerDependencies:
+      - rollup
       - typescript
 
   tslib@2.6.3: {}
@@ -5307,8 +5318,6 @@ snapshots:
       - sugarss
       - supports-color
       - terser
-
-  vscode-uri@3.0.8: {}
 
   vue-eslint-parser@9.4.3(eslint@9.7.0):
     dependencies:
