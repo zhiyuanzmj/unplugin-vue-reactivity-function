@@ -101,10 +101,11 @@ function transformReactivityFunction(
 
   for (const { ast, offset } of asts) {
     walkAST<t.Node>(ast, {
-      enter(node) {
+      enter(node, parent) {
         if (node.type !== 'CallExpression') return
 
         if (
+          parent?.type === 'VariableDeclarator' &&
           new RegExp(`^\\$(?!(\\$|${ignore.join('|')})?$)`).test(
             s.sliceNode(node.callee, { offset }),
           )

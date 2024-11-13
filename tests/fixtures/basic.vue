@@ -14,6 +14,9 @@ const { id, name } = $useApi()
 id === 1
 useApi$(name)
 
+// @ts-expect-error
+console.log($useApi())
+
 watch$(name, () => {})
 
 defineExpose$({

@@ -19,6 +19,7 @@ var _sfc_main = /* @__PURE__ */ defineComponent({
     const { id, name } = $(useApi());
     id === 1;
     useApi($$(name));
+    console.log($useApi());
     watch($$(name), () => {
     });
     defineExpose({

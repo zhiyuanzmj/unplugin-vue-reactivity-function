@@ -73,9 +73,13 @@ function transform({
     }
   }
 
-  function walkReactivityFunction(node: import('typescript').Node) {
+  function walkReactivityFunction(
+    node: import('typescript').Node,
+    parent: import('typescript').Node,
+  ) {
     if (ts.isCallExpression(node)) {
       if (
+        ts.isVariableDeclaration(parent) &&
         new RegExp(`^\\$(?!(\\$|${ignore.join('|')})?$)`).test(
           getText(node.expression, ast, ts),
         )
@@ -104,10 +108,10 @@ function transform({
     }
 
     ts.forEachChild(node, (child) => {
-      walkReactivityFunction(child)
+      walkReactivityFunction(child, node)
     })
   }
-  ts.forEachChild(ast, walkReactivityFunction)
+  ts.forEachChild(ast, (node) => walkReactivityFunction(node, ast))
 }
 
 const plugin = createPlugin<{ ignore?: string[] } | undefined>(
