@@ -115,7 +115,10 @@ function transform({
 }
 
 const plugin = createPlugin<{ ignore?: string[] } | undefined>(
-  ({ ts, vueCompilerOptions }, options) => {
+  (
+    { ts, vueCompilerOptions },
+    options = vueCompilerOptions?.reactivityFunction,
+  ) => {
     return {
       name: 'vue-reactivity-function',
       resolveVirtualCode({ ast, source, codes }) {

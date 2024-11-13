@@ -78,7 +78,7 @@
   "dependencies": {
     "@vue-macros/common": "^1.10.4",
     "muggle-string": "^0.4.1",
-    "ts-macro": "^0.0.5",
+    "ts-macro": "^0.1.5",
     "unplugin": "^1.11.0"
   },
   "devDependencies": {
