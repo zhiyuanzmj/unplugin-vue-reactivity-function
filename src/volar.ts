@@ -77,6 +77,9 @@ function transform({
     node: import('typescript').Node,
     parent: import('typescript').Node,
   ) {
+    if (ts.isNonNullExpression(node)) {
+      node = node.expression
+    }
     if (ts.isCallExpression(node)) {
       if (
         ts.isVariableDeclaration(parent) &&

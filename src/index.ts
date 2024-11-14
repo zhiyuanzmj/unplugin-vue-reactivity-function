@@ -102,6 +102,9 @@ function transformReactivityFunction(
   for (const { ast, offset } of asts) {
     walkAST<t.Node>(ast, {
       enter(node, parent) {
+        if (node.type === 'TSNonNullExpression') {
+          node = node.expression
+        }
         if (node.type !== 'CallExpression') return
 
         if (
