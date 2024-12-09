@@ -168,6 +168,12 @@ defineExpose$({
 defineExpose({
   base64: $$(base64),
 })
+
+let compRef = $useRef()
+defineRender(<Comp ref$={compRef} />)
+// convert to:
+let compRef = $(useRef())
+defineRender(<Comp ref={$$(compRef)} />)
 </script>
 ```
 

@@ -1,5 +1,5 @@
-<script setup lang="ts">
-import { inject, provide, toRefs, watch } from 'vue'
+<script setup lang="tsx">
+import { type Ref, inject, provide, toRefs, watch } from 'vue'
 import { useBase64 } from '@vueuse/core'
 import { useUserStore } from '../store/user'
 
@@ -21,6 +21,10 @@ const stop = watch$(base64, () => {
 defineExpose$({
   base64,
 })
+
+const title = $ref('title')
+const Comp = ({ title }: { title: Ref<string> }) => <div>{title.value}</div>
+const Render = <Comp title$={title} />
 </script>
 
 <template>

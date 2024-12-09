@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { ref, watch } from 'vue'
+import { Ref, ref, watch } from 'vue'
 
 function useApi(defaultName = ref('')) {
   const id = ref(1)
@@ -22,10 +22,12 @@ watch$(name, () => {})
 defineExpose$({
   name,
 })
+
+const title = $ref<string>('title')
+const Comp = ({ title }: { title: Ref<string> }) => title.value
+const Render = () => <Comp title$={title} />
 </script>
 
 <template>
-  <div>
-    {{ name }}
-  </div>
+  <Render />
 </template>

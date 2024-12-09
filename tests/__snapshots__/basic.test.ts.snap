@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`fixtures > tests/fixtures/basic.vue 1`] = `
-"import { defineComponent, ref, watch, openBlock, createElementBlock, toDisplayString, unref } from 'vue';
+"import { defineComponent, ref, watch, openBlock, createBlock } from 'vue';
 import _export_sfc from '[NULL]/plugin-vue/export-helper';
 
 "use strict";
@@ -25,14 +25,11 @@ var _sfc_main = /* @__PURE__ */ defineComponent({
     defineExpose({
       name: $$(name)
     });
+    const title = $ref("title");
+    const Comp = ({ title: title2 }) => title2.value;
+    const Render = () => /* @__PURE__ */ React.createElement(Comp, { title: $$(title) });
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock(
-        "div",
-        null,
-        toDisplayString(unref(name)),
-        1
-        /* TEXT */
-      );
+      return openBlock(), createBlock(Render);
     };
   }
 });

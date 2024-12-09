@@ -105,24 +105,34 @@ function transformReactivityFunction(
         if (node.type === 'TSNonNullExpression') {
           node = node.expression
         }
-        if (node.type !== 'CallExpression') return
+        if (node.type === 'CallExpression') {
+          if (
+            parent?.type === 'VariableDeclarator' &&
+            new RegExp(`^\\$(?!(\\$|${ignore.join('|')})?$)`).test(
+              s.sliceNode(node.callee, { offset }),
+            )
+          ) {
+            s.appendRight(node.callee.start! + offset + 1, '(')
+            s.appendRight(node.end! + offset, ')')
+          }
 
-        if (
-          parent?.type === 'VariableDeclarator' &&
-          new RegExp(`^\\$(?!(\\$|${ignore.join('|')})?$)`).test(
-            s.sliceNode(node.callee, { offset }),
-          )
+          if (/(?<!^(\$)?)\$$/.test(s.sliceNode(node.callee, { offset }))) {
+            s.remove(node.callee.end! + offset - 1, node.callee.end! + offset)
+
+            node.arguments.forEach((argument) => {
+              transformArguments(argument, s, offset)
+            })
+          }
+        } else if (
+          node.type === 'JSXAttribute' &&
+          node.value?.type === 'JSXExpressionContainer' &&
+          s.sliceNode(node.name).endsWith('$')
         ) {
-          s.appendRight(node.callee.start! + offset + 1, '(')
-          s.appendRight(node.end! + offset, ')')
-        }
-
-        if (/(?<!^(\$)?)\$$/.test(s.sliceNode(node.callee, { offset }))) {
-          s.remove(node.callee.end! + offset - 1, node.callee.end! + offset)
-
-          node.arguments.forEach((argument) => {
-            transformArguments(argument, s, offset)
-          })
+          s.remove(node.name.end! - 1, node.name.end!)
+          if (node.value.expression) {
+            s.appendLeft(node.value.expression.start! + offset, '$$(')
+            s.appendRight(node.value.expression.end! + offset, ')')
+          }
         }
       },
     })

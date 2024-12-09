@@ -108,6 +108,28 @@ function transform({
           transformArguments(argument)
         })
       }
+    } else if (
+      ts.isJsxAttribute(node) &&
+      node.initializer &&
+      ts.isJsxExpression(node.initializer) &&
+      node.initializer.expression &&
+      getText(node.name, ast, ts).endsWith('$')
+    ) {
+      replaceSourceRange(codes, source, node.name.end - 1, node.name.end)
+      replaceSourceRange(
+        codes,
+        source,
+        node.initializer.expression.pos,
+        node.initializer.expression.pos,
+        '$$(',
+      )
+      replaceSourceRange(
+        codes,
+        source,
+        node.initializer.expression.end,
+        node.initializer.expression?.end,
+        ')',
+      )
     }
 
     ts.forEachChild(node, (child) => {
