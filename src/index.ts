@@ -126,7 +126,8 @@ function transformReactivityFunction(
         } else if (
           node.type === 'JSXAttribute' &&
           node.value?.type === 'JSXExpressionContainer' &&
-          s.sliceNode(node.name).endsWith('$')
+          s.sliceNode(node.name).endsWith('$') &&
+          !s.sliceNode(node.name).includes(':$')
         ) {
           s.remove(node.name.end! - 1, node.name.end!)
           if (node.value.expression) {

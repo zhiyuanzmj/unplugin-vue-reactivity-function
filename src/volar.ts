@@ -113,7 +113,8 @@ function transform({
       node.initializer &&
       ts.isJsxExpression(node.initializer) &&
       node.initializer.expression &&
-      getText(node.name, ast, ts).endsWith('$')
+      getText(node.name, ast, ts).endsWith('$') &&
+      !getText(node.name, ast, ts).includes(':$')
     ) {
       replaceSourceRange(codes, source, node.name.end - 1, node.name.end)
       replaceSourceRange(
