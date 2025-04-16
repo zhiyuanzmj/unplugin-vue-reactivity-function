@@ -11,16 +11,7 @@ export interface Options extends Pick<BaseOptions, 'include' | 'exclude'> {
 export type OptionsResolved = Pick<Required<Options>, 'include' | 'ignore'> &
   Pick<Options, 'exclude'>
 
-export const ignore = [
-  'ref',
-  'computed',
-  'shallowRef',
-  'toRef',
-  'customRef',
-  'defineProp',
-  'defineProps',
-  'defineModels',
-]
+export const ignore = []
 
 export function resolveOption(options: Options): OptionsResolved {
   return {

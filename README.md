@@ -136,28 +136,30 @@ import { useUserStore } from '~/store/user'
 
 const { token, login } = $toRefs(useUserStore())
 // convert to:
-const { token, login } = $(toRefs(useUserStore()))
-login()
+const { token, login } = toRefs(useUserStore())
+login.value()
 
 const text = $inject$('text', token)
 // convert to:
-const text = $(inject('text', $$(defaultText)))
+const text = inject('text', token)
 
 const { base64 } = $useBase64$(text)
 // convert to:
-const { base64 } = $(useBase64($$(text)))
+const { base64 } = useBase64(text)
 
 provide$('base64', base64)
 // convert to:
-provide('base64', $$(base64))
+provide('base64', base64)
 
 const stop = watch$(base64, () => {
+  console.log(base64)
   console.log$(base64)
   stop()
 })
 // convert to:
-const stop = watch($$(base64), () => {
-  console.log($$(base64))
+const stop = watch(base64, () => {
+  console.log(base64.value)
+  console.log(base64)
   stop()
 })
 
@@ -166,14 +168,14 @@ defineExpose$({
 })
 // convert to:
 defineExpose({
-  base64: $$(base64),
+  base64,
 })
 
 let compRef = $useRef()
 defineRender(<Comp ref$={compRef} />)
 // convert to:
-let compRef = $(useRef())
-defineRender(<Comp ref={$$(compRef)} />)
+let compRef = useRef()
+defineRender(<Comp ref={compRef} />)
 </script>
 ```
 

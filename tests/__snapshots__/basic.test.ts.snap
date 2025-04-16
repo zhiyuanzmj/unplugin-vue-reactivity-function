@@ -1,40 +1,66 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`fixtures > tests/fixtures/basic.vue 1`] = `
-"import { defineComponent, ref, watch, openBlock, createBlock } from 'vue';
-import _export_sfc from '[NULL]/plugin-vue/export-helper';
+exports[`fixtures > tests/fixtures/basic.tsx 1`] = `
+"import { ref, toRef, createPropsRestProxy, watch, createVNode } from 'vue';
 
-"use strict";
-var _sfc_main = /* @__PURE__ */ defineComponent({
-  __name: "basic",
-  setup(__props) {
-    function useApi(defaultName = ref("")) {
-      const id2 = ref(1);
-      const name2 = ref(defaultName);
-      return {
-        id: id2,
-        name: name2
-      };
-    }
-    const { id, name } = $(useApi());
-    id === 1;
-    useApi($$(name));
-    console.log($useApi());
-    watch($$(name), () => {
-    });
-    defineExpose({
-      name: $$(name)
-    });
-    const title = $ref("title");
-    const Comp = ({ title: title2 }) => title2.value;
-    const Render = () => /* @__PURE__ */ React.createElement(Comp, { title: $$(title) });
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(Render);
-    };
-  }
+function useApi(defaultName = ref('')) {
+  const id = ref(1);
+  const name = ref(defaultName);
+  return {
+    id,
+    name
+  };
+}
+function useArray() {
+  const foo = ref(1);
+  const bar = ref(2);
+  [foo, bar];
+  return [foo, bar];
+}
+const useArray1 = () => {
+  const foo = ref(1);
+  const bar = ref(2);
+  [foo, bar];
+  return [foo, bar];
+};
+useArray1();
+const __MACROS_ref0 = useArray(),
+  foo = toRef(__MACROS_ref0, '0', 0),
+  rest = Object.values(createPropsRestProxy(__MACROS_ref0, ['0']));
+foo.value === 1;
+[rest];
+let __MACROS_ref1 = useApi(),
+  id1 = toRef(__MACROS_ref1, 'id', 0),
+  name = toRef(__MACROS_ref1, 'name'),
+  rest1 = createPropsRestProxy(__MACROS_ref1, ['id', 'name']);
+;
+id1.value == 0;
+[rest1];
+useApi(name);
+
+// @ts-expect-error
+console.log($useApi());
+console.log(name);
+watch(name, () => {
+  let name = 1;
+  return {
+    name
+  };
 });
-
-var basic = /* @__PURE__ */ _export_sfc(_sfc_main, [__FILE__]);
+defineExpose({
+  name: name.value.value
+});
+const title = ref('title');
+console.log(title);
+const Comp = ({
+  title
+}) => title.value;
+var basic = (() => createVNode(Comp, {
+  "title": title,
+  "foo": title.value
+}, {
+  default: () => [title.value]
+}));
 
 export { basic as default };
 "
