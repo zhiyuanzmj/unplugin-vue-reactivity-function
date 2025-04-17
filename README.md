@@ -134,10 +134,11 @@ export const useUserStore = defineStore('user', () => {
 import { useBase64 } from '@vueuse/core'
 import { useUserStore } from '~/store/user'
 
-const { token, login } = $toRefs(useUserStore())
+const { token, login } = $useUserStore()
+;[token]
 // convert to:
 const { token, login } = toRefs(useUserStore())
-login.value()
+;[login.value]
 
 const text = $inject$('text', token)
 // convert to:
