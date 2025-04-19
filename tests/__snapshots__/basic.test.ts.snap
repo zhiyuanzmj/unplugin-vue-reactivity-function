@@ -11,32 +11,28 @@ function useApi(defaultName = ref('')) {
     name
   };
 }
+let __MACROS_ref0 = useApi(),
+  id1 = toRef(__MACROS_ref0, 'id', 0),
+  name = toRef(__MACROS_ref0, 'name'),
+  rest1 = createPropsRestProxy(__MACROS_ref0, ['id', 'name']);
+;
+id1.value == 0;
+({
+  id1: id1.value,
+  name: name.value,
+  rest1
+});
+useApi(name);
 function useArray() {
   const foo = ref(1);
   const bar = ref(2);
   [foo, bar];
   return [foo, bar];
 }
-const useArray1 = () => {
-  const foo = ref(1);
-  const bar = ref(2);
-  [foo, bar];
-  return [foo, bar];
-};
-useArray1();
-const __MACROS_ref0 = useArray(),
-  foo = toRef(__MACROS_ref0, '0', 0),
-  rest = Object.values(createPropsRestProxy(__MACROS_ref0, ['0']));
+let __MACROS_ref1 = useArray(),
+  foo = toRef(__MACROS_ref1, '0', 0);
 foo.value === 1;
-[rest];
-let __MACROS_ref1 = useApi(),
-  id1 = toRef(__MACROS_ref1, 'id', 0),
-  name = toRef(__MACROS_ref1, 'name'),
-  rest1 = createPropsRestProxy(__MACROS_ref1, ['id', 'name']);
-;
-id1.value == 0;
-[rest1];
-useApi(name);
+foo.value = 1;
 
 // @ts-expect-error
 console.log($useApi());
@@ -48,7 +44,7 @@ watch(name, () => {
   };
 });
 defineExpose({
-  name: name.value.value
+  name: name.value
 });
 const title = ref('title');
 console.log(title);

@@ -52,6 +52,26 @@
       "require": "./dist/volar.cjs",
       "import": "./dist/volar.js"
     },
+    "./raw": {
+      "require": "./dist/raw.cjs",
+      "import": "./dist/raw.js"
+    },
+    "./rolldown": {
+      "require": "./dist/rolldown.cjs",
+      "import": "./dist/rolldown.js"
+    },
+    "./rspack": {
+      "require": "./dist/rspack.cjs",
+      "import": "./dist/rspack.js"
+    },
+    "./nuxt": {
+      "require": "./dist/nuxt.cjs",
+      "import": "./dist/nuxt.js"
+    },
+    "./astro": {
+      "require": "./dist/astro.cjs",
+      "import": "./dist/astro.js"
+    },
     "./*": "./*"
   },
   "typesVersions": {
@@ -76,9 +96,9 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@babel/parser": "^7.27.0",
-    "@babel/plugin-transform-typescript": "^7.27.0",
-    "@babel/traverse": "^7.27.0",
+    "@nuxt/kit": "^3.16.2",
+    "@typescript-eslint/scope-manager": "^8.30.1",
+    "@typescript-eslint/typescript-estree": "^8.30.1",
     "@vue-macros/common": "3.0.0-beta.8",
     "ts-macro": "^0.1.25",
     "unplugin": "^2.3.2"
@@ -89,6 +109,7 @@
     "@sxzz/prettier-config": "^2.0.2",
     "@types/babel__traverse": "^7.20.7",
     "@types/node": "^20.14.11",
+    "@typescript-eslint/types": "^8.30.1",
     "@vue-macros/reactivity-transform": "^0.4.6",
     "@vue-macros/test-utils": "^1.4.0",
     "bumpp": "^9.4.1",

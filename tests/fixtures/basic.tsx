@@ -1,13 +1,22 @@
 import { Ref, ref, watch } from 'vue'
 
-function useApi(defaultName = ref('')) {
-  const id = ref(1)
-  const name = ref(defaultName)
+function useApi$(defaultName = ref('')) {
+  const id = $ref(1)
+  const name = $ref(defaultName)
   return {
     id,
     name,
   }
 }
+
+let { id: id1 = 0, name, ...rest1 } = $useApi();
+;id1 == 0
+;({
+  id1,
+  name,
+  rest1
+})
+useApi$(name)
 
 function useArray$() {
   const foo = $ref(1)
@@ -15,22 +24,10 @@ function useArray$() {
   ;[$$(foo),$$(bar)]
   return [foo, bar]
 }
-const useArray1$ = () => {
-  const foo = $ref(1)
-  const bar = $ref(2) 
-  ;[$$(foo),$$(bar)]
-  return [foo, bar]
-}
-useArray1()
 
-const [foo = 0, ...rest] = $useArray()
+let [foo = 0] = $useArray()
 foo === 1  
-;[rest]
-
-let { id: id1 = 0, name, ...rest1 } = $useApi();
-;id1 == 0
-;[rest1]
-useApi$(name)
+foo = 1
 
 // @ts-expect-error
 console.log($useApi())
