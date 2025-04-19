@@ -1,6 +1,6 @@
 {
   "name": "unplugin-vue-reactivity-function",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "packageManager": "pnpm@10.8.0",
   "description": "Reactivity function.",
   "type": "module",
