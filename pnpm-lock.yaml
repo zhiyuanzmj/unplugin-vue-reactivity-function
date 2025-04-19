@@ -11,6 +11,9 @@ importers:
       '@nuxt/kit':
         specifier: ^3.16.2
         version: 3.16.2
+      '@nuxt/schema':
+        specifier: ^3.16.2
+        version: 3.16.2
       '@typescript-eslint/scope-manager':
         specifier: ^8.30.1
         version: 8.30.1
@@ -899,6 +902,10 @@ packages:
   '@nuxt/kit@3.16.2':
     resolution: {integrity: sha512-K1SAUo2vweTfudKZzjKsZ5YJoxPLTspR5qz5+G61xtZreLpsdpDYfBseqsIAl5VFLJuszeRpWQ01jP9LfQ6Ksw==}
     engines: {node: '>=18.12.0'}
+
+  '@nuxt/schema@3.16.2':
+    resolution: {integrity: sha512-2HZPM372kuI/uw9VU/hOoYuzv803oZAtyoEKC5dQCQTKAQ293AjypF3WljMXUSReFS/hcbBSgGzYUPHr3Qo+pg==}
+    engines: {node: ^14.18.0 || >=16.10.0}
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -3893,6 +3900,13 @@ snapshots:
       untyped: 2.0.0
     transitivePeerDependencies:
       - magicast
+
+  '@nuxt/schema@3.16.2':
+    dependencies:
+      consola: 3.4.2
+      defu: 6.1.4
+      pathe: 2.0.3
+      std-env: 3.9.0
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
