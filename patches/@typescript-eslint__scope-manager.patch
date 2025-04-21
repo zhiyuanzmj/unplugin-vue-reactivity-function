@@ -1,0 +1,19 @@
+diff --git a/dist/scope/FunctionScope.js b/dist/scope/FunctionScope.js
+index f5eb4d90f48e71fa147b0ca31194313beb4c8a12..0957b146d5744624a025217c319a40f1a3ded25e 100644
+--- a/dist/scope/FunctionScope.js
++++ b/dist/scope/FunctionScope.js
+@@ -24,11 +24,11 @@ class FunctionScope extends ScopeBase_1.ScopeBase {
+         if (this.block.type === types_1.AST_NODE_TYPES.Program) {
+             return true;
+         }
+-        const bodyStart = this.block.body?.range[0] ?? -1;
++        const bodyStart = this.block.body?.start ?? this.block.body?.range[0] ?? -1;
+         // It's invalid resolution in the following case:
+         return !((variable.scope === this &&
+-            ref.identifier.range[0] < bodyStart && // the reference is in the parameter part.
+-            variable.defs.every(d => d.name.range[0] >= bodyStart)) // the variable is in the body.
++          (ref.identifier.start ?? ref.identifier.range[0]) < bodyStart && // the reference is in the parameter part.
++            variable.defs.every(d => (d.name.start ?? d.name.range[0]) >= bodyStart)) // the variable is in the body.
+         );
+     }
+ }

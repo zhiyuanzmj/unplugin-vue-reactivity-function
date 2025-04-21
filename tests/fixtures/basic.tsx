@@ -11,7 +11,7 @@ function useApi$(defaultName = ref('')) {
 
 let { id: id1 = 0, name, ...rest1 } = $useApi();
 ;id1 == 0
-;({
+console.log({
   id1,
   name,
   rest1

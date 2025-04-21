@@ -99,8 +99,9 @@
     "@nuxt/kit": "^3.16.2",
     "@nuxt/schema": "^3.16.2",
     "@typescript-eslint/scope-manager": "^8.30.1",
-    "@typescript-eslint/typescript-estree": "^8.30.1",
     "@vue-macros/common": "3.0.0-beta.8",
+    "estree-walker": "^3.0.3",
+    "oxc-parser": "^0.64.0",
     "ts-macro": "^0.1.25",
     "unplugin": "^2.3.2"
   },

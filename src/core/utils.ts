@@ -1,44 +1,27 @@
+import { walk } from 'estree-walker'
+import type { Node } from 'oxc-parser'
 import type { Reference, Scope } from '@typescript-eslint/scope-manager'
-import type { TSESTree } from '@typescript-eslint/typescript-estree'
 
-export function getReferences(
-  scope: Scope,
-  id: TSESTree.Identifier,
-): Reference[] {
+export function getReferences(scope: Scope, id: Node): Reference[] {
   return scope.childScopes.reduce(
     (acc, scope) => (acc.push(...getReferences(scope, id)), acc),
     scope.references.filter(
+      // @ts-ignore
       (ref) => ref.identifier !== id && ref.resolved?.identifiers.includes(id),
     ),
   )
 }
 
-export function getMemberExpression(node: TSESTree.Node) {
-  if (!node.parent) return node
-  if (
-    node.parent.type === 'MemberExpression' ||
-    node.parent.type === 'ChainExpression' ||
-    (node.parent.type === 'CallExpression' && node.parent?.callee === node)
-  ) {
-    return getMemberExpression(node.parent)
+export function collectRefs(argument: Node, refs: Node[], visiter = true) {
+  if (argument.type === 'ChainExpression') {
+    argument = argument.expression
   }
-  return node
-}
-
-export function transformArguments(
-  argument: TSESTree.Node,
-  refs: TSESTree.Node[],
-) {
-  if (
-    [
-      'Identifier',
-      'CallExpression',
-      'MemberExpression',
-      'ChainExpression',
-      'TSInstantiationExpression',
-    ].includes(argument.type)
-  ) {
+  if (argument.type === 'Identifier') {
     refs.push(argument)
+  } else if (argument.type === 'CallExpression') {
+    refs.push(argument.callee)
+  } else if (argument.type === 'MemberExpression') {
+    refs.push(argument.object)
   } else if (
     argument.type === 'FunctionExpression' ||
     argument.type === 'ArrowFunctionExpression'
@@ -46,32 +29,37 @@ export function transformArguments(
     transformFunctionReturn(argument, refs)
   } else if (argument.type === 'ArrayExpression') {
     argument.elements.forEach((arg) => {
-      transformArguments(arg!, refs)
+      collectRefs(arg!, refs)
     })
   } else if (argument.type === 'ObjectExpression') {
     argument.properties.forEach((prop) => {
       if (prop.type === 'Property') {
-        transformArguments(prop.value, refs)
+        collectRefs(prop.value, refs)
       }
+    })
+  } else if (visiter) {
+    // @ts-ignore
+    walk(argument, {
+      enter(node: Node) {
+        collectRefs(node, refs, false)
+      },
     })
   }
 }
 
-export function transformFunctionReturn(
-  node: TSESTree.Node,
-  refs: TSESTree.Node[],
-) {
+export function transformFunctionReturn(node: Node, refs: Node[]) {
   if (
-    node.type === 'FunctionDeclaration' ||
-    node.type === 'FunctionExpression' ||
-    node.type === 'ArrowFunctionExpression'
+    (node.type === 'FunctionDeclaration' ||
+      node.type === 'FunctionExpression' ||
+      node.type === 'ArrowFunctionExpression') &&
+    node.body
   ) {
     if (node.body.type !== 'BlockStatement') {
-      transformArguments(node.body, refs)
+      collectRefs(node.body, refs)
     } else {
       node.body.body?.forEach((statement) => {
         if (statement.type === 'ReturnStatement' && statement.argument) {
-          transformArguments(statement.argument, refs)
+          collectRefs(statement.argument, refs)
         }
       })
     }

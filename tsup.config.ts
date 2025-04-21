@@ -6,6 +6,7 @@ export default defineConfig({
   format: ['cjs', 'esm'],
   target: 'node16.14',
   splitting: true,
+  noExternal: ['estree-walker'],
   cjsInterop: true,
   minify: process.argv.includes('--minify'),
   clean: true,

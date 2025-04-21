@@ -10,175 +10,169 @@ import {
   parseSFC,
 } from '@vue-macros/common'
 import { analyze } from '@typescript-eslint/scope-manager'
-import {
-  type TSESTree,
-  parse,
-  simpleTraverse,
-} from '@typescript-eslint/typescript-estree'
+import { type IdentifierName, type Node, parseSync } from 'oxc-parser'
+import { walk } from 'estree-walker'
 import { type Options, resolveOption } from './core/options'
 import {
-  getMemberExpression,
+  collectRefs,
   getReferences,
-  transformArguments,
   transformFunctionReturn,
 } from './core/utils'
 import type { UnpluginOptions } from 'unplugin'
 
 export function transformReactivityFunction(
-  text: string,
+  code: string,
   ignore: string[],
   s: MagicStringAST,
 ) {
-  const ast = parse(text, {
-    sourceType: 'module',
-    range: true,
-    jsx: true,
-  })
-  const scopeManager = analyze(ast, {
+  const { program } = parseSync('index.tsx', code, {
     sourceType: 'module',
   })
-  const unrefs: TSESTree.Identifier[] = []
-  const refs: TSESTree.Node[] = []
+  const scopeManager = analyze(program as any, {
+    sourceType: 'module',
+  })
+
+  const unrefs: IdentifierName[] = []
+  const refs: Node[] = []
   let index = 0
-  simpleTraverse(
-    ast,
-    {
-      enter(node, parent) {
-        if (node.type === 'TSNonNullExpression') {
-          node = node.expression
-        }
-        if (node.type === 'CallExpression') {
-          const calleeName = s.slice(...node.callee.range)
-
-          if (calleeName === '$$') {
-            refs.push(node.arguments[0])
-            s.remove(...node.callee.range)
-          } else if (
-            parent?.type === 'VariableDeclarator' &&
-            (calleeName === '$' ||
-              new RegExp(`^\\$(?!(\\$|${ignore.join('|')})?$)`).test(
-                calleeName,
-              ))
-          ) {
-            if (parent.id.type === 'Identifier') {
-              unrefs.push(parent.id)
-            } else if (
-              parent.id.type === 'ObjectPattern' ||
-              parent.id.type === 'ArrayPattern'
-            ) {
-              const refName = `${HELPER_PREFIX}ref${index++}`
-              const toRef = importHelperFn(s, 0, 'toRef')
-              const isObjectPattern = parent.id.type === 'ObjectPattern'
-              const props =
-                parent.id.type === 'ObjectPattern'
-                  ? parent.id.properties
-                  : parent.id.elements
-              let propIndex = 0
-              const destructures: string[] = []
-              for (const prop of props) {
-                if (!prop) continue
-                if (
-                  prop.type === 'RestElement' &&
-                  prop.argument.type === 'Identifier'
-                ) {
-                  let createPropsRestProxy = importHelperFn(
-                    s,
-                    0,
-                    'createPropsRestProxy',
-                  )
-                  if (parent.id.type === 'ArrayPattern') {
-                    createPropsRestProxy = `Object.values(${createPropsRestProxy}`
-                  }
-                  s.appendLeft(
-                    parent.range[1]!,
-                    `\n,${prop.argument.name} = ${createPropsRestProxy}(${refName}, [${destructures.join(', ')}])${
-                      parent.id.type === 'ArrayPattern' ? ')' : ''
-                    }`,
-                  )
-                  continue
-                }
-                const propKey =
-                  isObjectPattern &&
-                  prop.type === 'Property' &&
-                  prop.key.type === 'Identifier'
-                    ? prop.key.name
-                    : propIndex++
-                const propValue =
-                  isObjectPattern && prop.type === 'Property'
-                    ? prop.value
-                    : prop
-                const aliasKey =
-                  propValue.type === 'AssignmentPattern'
-                    ? propValue.left
-                    : propValue
-                const defaultValue =
-                  propValue.type === 'AssignmentPattern'
-                    ? `, ${s.slice(...propValue.right.range)}`
-                    : ''
-                if (aliasKey.type === 'Identifier') {
-                  unrefs.push(aliasKey)
-                  destructures.push(`'${propKey}'`)
-                  s.appendLeft(
-                    parent.range[1],
-                    `\n,${aliasKey.name} = ${toRef}(${refName}, '${propKey}'${defaultValue})`,
-                  )
-                }
-              }
-              s.overwrite(parent.id.range[0]!, parent.id.range[1]!, refName)
-            }
-            s.remove(node.callee.range[0], node.callee.range[0] + 1)
-          }
-
-          if (calleeName.endsWith('$')) {
-            s.remove(node.callee.range[1]! - 1, node.callee.range[1]!)
-
-            node.arguments.forEach((argument) => {
-              transformArguments(argument, refs)
-            })
-          }
-        } else if (
-          node.type === 'JSXAttribute' &&
-          node.value?.type === 'JSXExpressionContainer' &&
-          node.name.type === 'JSXIdentifier' &&
-          node.name.name.endsWith('$') &&
-          node.name.name.split('').filter((i) => i === '$').length !== 2
-        ) {
-          s.remove(node.name.range[1] - 1, node.name.range[1])
-          if (node.value.expression) {
-            refs.push(node.value.expression)
-          }
-        } else if (
-          node.type === 'FunctionDeclaration' &&
-          node.id?.type === 'Identifier' &&
-          node.id.name.endsWith('$')
-        ) {
-          transformFunctionReturn(node, refs)
-          s.remove(node.id.range[1] - 1, node.id.range[1])
-        } else if (
-          node.type === 'ArrowFunctionExpression' &&
-          parent?.type === 'VariableDeclarator' &&
-          parent.id?.type === 'Identifier' &&
-          parent.id.name.endsWith('$')
-        ) {
-          transformFunctionReturn(node, refs)
-          s.remove(parent.id.range[1] - 1, parent.id.range[1])
-        }
-      },
+  // @ts-ignore
+  walk(program, {
+    leave(node, parent) {
+      // @ts-ignore
+      node.parent = parent
     },
-    true,
-  )
+    enter(node: Node, parent: Node) {
+      if (node.type === 'TSNonNullExpression') {
+        node = node.expression
+      }
+      if (node.type === 'CallExpression') {
+        const calleeName = s.slice(node.callee.start, node.callee.end)
+
+        if (calleeName === '$$') {
+          refs.push(node.arguments[0])
+          s.remove(node.callee.start, node.callee.end)
+        } else if (
+          parent?.type === 'VariableDeclarator' &&
+          (calleeName === '$' ||
+            new RegExp(`^\\$(?!(\\$|${ignore.join('|')})?$)`).test(calleeName))
+        ) {
+          if (parent.id.type === 'Identifier') {
+            unrefs.push(parent.id)
+          } else if (
+            parent.id.type === 'ObjectPattern' ||
+            parent.id.type === 'ArrayPattern'
+          ) {
+            const refName = `${HELPER_PREFIX}ref${index++}`
+            const toRef = importHelperFn(s, 0, 'toRef')
+            const isObjectPattern = parent.id.type === 'ObjectPattern'
+            const props =
+              parent.id.type === 'ObjectPattern'
+                ? parent.id.properties
+                : parent.id.elements
+            let propIndex = 0
+            const destructures: string[] = []
+            for (const prop of props) {
+              if (!prop) continue
+              if (
+                prop.type === 'RestElement' &&
+                prop.argument.type === 'Identifier'
+              ) {
+                let createPropsRestProxy = importHelperFn(
+                  s,
+                  0,
+                  'createPropsRestProxy',
+                )
+                if (parent.id.type === 'ArrayPattern') {
+                  createPropsRestProxy = `Object.values(${createPropsRestProxy}`
+                }
+                s.appendLeft(
+                  parent.end,
+                  `\n,${prop.argument.name} = ${createPropsRestProxy}(${refName}, [${destructures.join(', ')}])${
+                    parent.id.type === 'ArrayPattern' ? ')' : ''
+                  }`,
+                )
+                continue
+              }
+              const propKey =
+                isObjectPattern &&
+                prop.type === 'Property' &&
+                prop.key.type === 'Identifier'
+                  ? prop.key.name
+                  : propIndex++
+              const propValue =
+                isObjectPattern && prop.type === 'Property' ? prop.value : prop
+              const aliasKey =
+                propValue.type === 'AssignmentPattern'
+                  ? propValue.left
+                  : propValue
+              const defaultValue =
+                propValue.type === 'AssignmentPattern'
+                  ? `, ${s.slice(propValue.right.start, propValue.right.end)}`
+                  : ''
+              if (aliasKey.type === 'Identifier') {
+                unrefs.push(aliasKey)
+                destructures.push(`'${propKey}'`)
+                s.appendLeft(
+                  parent.end,
+                  `\n,${aliasKey.name} = ${toRef}(${refName}, '${propKey}'${defaultValue})`,
+                )
+              }
+            }
+            s.overwrite(parent.id.start, parent.id.end, refName)
+          }
+          s.remove(node.callee.start, node.callee.start + 1)
+        }
+
+        if (calleeName.endsWith('$')) {
+          s.remove(node.callee.end - 1, node.callee.end)
+
+          node.arguments.forEach((argument) => {
+            collectRefs(argument, refs)
+          })
+        }
+      } else if (
+        node.type === 'JSXAttribute' &&
+        node.value?.type === 'JSXExpressionContainer' &&
+        node.name.type === 'JSXIdentifier' &&
+        node.name.name.endsWith('$') &&
+        node.name.name.split('').filter((i) => i === '$').length !== 2
+      ) {
+        s.remove(node.name.end - 1, node.name.end)
+        if (node.value.expression) {
+          collectRefs(node.value.expression, refs)
+        }
+      } else if (
+        node.type === 'FunctionDeclaration' &&
+        node.id?.type === 'Identifier' &&
+        node.id.name.endsWith('$')
+      ) {
+        transformFunctionReturn(node, refs)
+        s.remove(node.id.end - 1, node.id.end)
+      } else if (
+        node.type === 'ArrowFunctionExpression' &&
+        parent?.type === 'VariableDeclarator' &&
+        parent.id?.type === 'Identifier' &&
+        parent.id.name.endsWith('$')
+      ) {
+        transformFunctionReturn(node, refs)
+        s.remove(parent.id.end - 1, parent.id.end)
+      }
+    },
+  })
 
   for (const id of unrefs) {
     const references = getReferences(scopeManager.globalScope!, id)
-    for (const { identifier } of references) {
-      const node = getMemberExpression(identifier)
-      if (!refs.includes(node)) {
-        const parent = node.parent
+    for (const ref of references) {
+      const identifier = ref.identifier as unknown as IdentifierName & {
+        parent: Node
+      }
+      if (!refs.includes(identifier)) {
+        const parent = identifier.parent
         if (parent?.type === 'Property' && parent.shorthand) {
           // { foo } => { foo: foo.value }
-          s.appendLeft(parent.value.range[0], `${id.name}: `)
+          s.appendLeft(identifier.start, `${id.name}: `)
         }
-        s.appendLeft(identifier.range[1], '.value')
+        s.appendLeft(identifier.end, '.value')
       }
     }
   }
