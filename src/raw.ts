@@ -28,9 +28,6 @@ export function transformReactivityFunction(
   const { program } = parseSync('index.tsx', code, {
     sourceType: 'module',
   })
-  const scopeManager = analyze(program as any, {
-    sourceType: 'module',
-  })
 
   const unrefs: IdentifierName[] = []
   const refs: Node[] = []
@@ -40,6 +37,8 @@ export function transformReactivityFunction(
     leave(node, parent) {
       // @ts-ignore
       node.parent = parent
+      // @ts-ignore
+      node.range = [node.start, node.end]
     },
     enter(node: Node, parent: Node) {
       if (node.type === 'TSNonNullExpression') {
@@ -160,6 +159,9 @@ export function transformReactivityFunction(
     },
   })
 
+  const scopeManager = analyze(program as any, {
+    sourceType: 'module',
+  })
   for (const id of unrefs) {
     const references = getReferences(scopeManager.globalScope!, id)
     for (const ref of references) {

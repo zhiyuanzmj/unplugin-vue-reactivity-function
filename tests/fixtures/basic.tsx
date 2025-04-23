@@ -41,7 +41,7 @@ watch$(name, () => {
 })
 
 defineExpose$({
-  name: name.value,
+  name,
 })    
 const title = $ref<string>('title')  
 console.log($$(title))

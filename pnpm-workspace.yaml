@@ -1,2 +1,0 @@
-patchedDependencies:
-  '@typescript-eslint/scope-manager': patches/@typescript-eslint__scope-manager.patch

@@ -117,14 +117,14 @@ export const useUserStore = defineStore$('user', () => {
 
 // convert to:
 export const useUserStore = defineStore('user', () => {
-  let token = $ref('')
+  const token = ref('')
   function login() {
-    token = 'TOKEN'
+    token.value = 'TOKEN'
   }
 
   return {
-    token: $$(token),
-    login: $$(login),
+    token,
+    login,
   }
 })
 ```
@@ -134,7 +134,7 @@ export const useUserStore = defineStore('user', () => {
 import { useBase64 } from '@vueuse/core'
 import { useUserStore } from '~/store/user'
 
-const { token, login } = $useUserStore()
+const { token, login } = useUserStore()
 ;[token]
 // convert to:
 const { token, login } = toRefs(useUserStore())
@@ -145,12 +145,14 @@ const text = $inject$('text', token)
 const text = inject('text', token)
 
 const { base64 } = $useBase64$(text)
+;[base64]
 // convert to:
-const { base64 } = useBase64(text)
+let { base64 } = $useBase64(text)
+;[base64.value]
 
 provide$('base64', base64)
 // convert to:
-provide('base64', base64)
+provide$('base64', base64)
 
 const stop = watch$(base64, () => {
   console.log(base64)
@@ -173,9 +175,11 @@ defineExpose({
 })
 
 let compRef = $useRef()
+;[compRef]
 defineRender(<Comp ref$={compRef} />)
 // convert to:
 let compRef = useRef()
+;[compRef.value]
 defineRender(<Comp ref={compRef} />)
 </script>
 ```
@@ -207,6 +211,17 @@ export default {
     }),
   ],
 }
+```
+
+### ESLint
+
+Convert to reactivity function.
+
+```ts
+// ./eslint.config.js
+import reactivityFunction from 'unplugin-vue-reactivity-function/eslint'
+
+export default [reactivityFunction()]
 ```
 
 ## License

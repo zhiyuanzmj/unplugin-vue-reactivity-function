@@ -44,7 +44,7 @@ watch(name, () => {
   };
 });
 defineExpose({
-  name: name.value
+  name
 });
 const title = ref('title');
 console.log(title);

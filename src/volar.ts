@@ -54,9 +54,6 @@ function transformReactivityFunction(options: {
   const { program } = parseSync('index.tsx', text, {
     sourceType: 'module',
   })
-  const scopeManager = analyze(program as any, {
-    sourceType: 'module',
-  })
   const unrefs: IdentifierName[] = []
   const refs: Node[] = []
   let index = 0
@@ -65,6 +62,8 @@ function transformReactivityFunction(options: {
     leave(node, parent) {
       // @ts-ignore
       node.parent = parent
+      // @ts-ignore
+      node.range = [node.start, node.end]
     },
     enter(node: Node, parent: Node) {
       if (node.type === 'TSNonNullExpression') {
@@ -241,6 +240,9 @@ function transformReactivityFunction(options: {
   codes.push(
     `declare const { toRef: ${HELPER_PREFIX}toRef }: typeof import('vue')`,
   )
+  const scopeManager = analyze(program as any, {
+    sourceType: 'module',
+  })
   for (const id of unrefs) {
     const references = getReferences(scopeManager.globalScope!, id)
     for (const ref of references) {
