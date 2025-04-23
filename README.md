@@ -147,7 +147,7 @@ const text = inject('text', token)
 const { base64 } = $useBase64$(text)
 ;[base64]
 // convert to:
-let { base64 } = $useBase64(text)
+let { base64 } = useBase64(text.value)
 ;[base64.value]
 
 provide$('base64', base64)
