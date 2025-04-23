@@ -92,7 +92,7 @@
   "scripts": {
     "lint": "eslint --cache .",
     "lint:fix": "pnpm run lint --fix",
-    "build": "tsup --minify",
+    "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest",
     "play": "pnpm run -C ./playground dev",
@@ -104,7 +104,7 @@
     "@nuxt/schema": "^3.16.2",
     "@typescript-eslint/scope-manager": "^8.30.1",
     "@vue-macros/common": "3.0.0-beta.8",
-    "estree-walker": "^3.0.3",
+    "estree-walker": "^2.0.2",
     "oxc-parser": "^0.64.0",
     "ts-macro": "^0.1.25",
     "unplugin": "^2.3.2"

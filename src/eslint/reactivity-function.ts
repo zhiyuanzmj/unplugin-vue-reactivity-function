@@ -18,13 +18,17 @@ const include = [
   'toRef',
   'toRefs',
   'customRef',
+  'useRef',
+  'useTemplateRef',
 ]
+
+const exclude = ['useRoute', 'useRouter']
 
 const rule: RuleModule<MessageIds, RuleOptions> = {
   defaultOptions: [
     {
       include,
-      exclude: [],
+      exclude,
     },
   ],
   meta: {
@@ -46,7 +50,7 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
   },
   create(context) {
     const includes = context.options[0]?.include ?? include
-    const excludes = context.options[0]?.exclude ?? []
+    const excludes = context.options[0]?.exclude ?? exclude
     return {
       VariableDeclarator(node) {
         if (node.init?.type !== 'CallExpression' || !node.id) return
@@ -54,8 +58,7 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
         if (
           init.callee.type === 'Identifier' &&
           !excludes.includes(init.callee.name) &&
-          (includes?.includes(init.callee.name) ||
-            /^use[A-Z]/.test(init.callee.name))
+          includes?.includes(init.callee.name)
         ) {
           context.report({
             node: init.callee,

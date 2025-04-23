@@ -11,6 +11,7 @@ import {
 } from '@vue-macros/common'
 import { analyze } from '@typescript-eslint/scope-manager'
 import { type IdentifierName, type Node, parseSync } from 'oxc-parser'
+// @ts-ignore
 import { walk } from 'estree-walker'
 import { type Options, resolveOption } from './core/options'
 import {
@@ -32,9 +33,8 @@ export function transformReactivityFunction(
   const unrefs: IdentifierName[] = []
   const refs: Node[] = []
   let index = 0
-  // @ts-ignore
   walk(program, {
-    leave(node, parent) {
+    leave(node: Node, parent: Node) {
       // @ts-ignore
       node.parent = parent
       // @ts-ignore

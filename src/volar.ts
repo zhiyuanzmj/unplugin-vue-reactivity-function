@@ -5,6 +5,7 @@ import {
   replaceSourceRange,
 } from 'ts-macro'
 import { analyze } from '@typescript-eslint/scope-manager'
+// @ts-ignore
 import { walk } from 'estree-walker'
 import { type IdentifierName, type Node, parseSync } from 'oxc-parser'
 import {
@@ -57,9 +58,8 @@ function transformReactivityFunction(options: {
   const unrefs: IdentifierName[] = []
   const refs: Node[] = []
   let index = 0
-  // @ts-ignore
   walk(program, {
-    leave(node, parent) {
+    leave(node: Node, parent: Node) {
       // @ts-ignore
       node.parent = parent
       // @ts-ignore
