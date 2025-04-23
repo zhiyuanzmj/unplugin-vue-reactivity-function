@@ -72,6 +72,10 @@
       "require": "./dist/astro.cjs",
       "import": "./dist/astro.js"
     },
+    "./eslint": {
+      "require": "./dist/eslint.cjs",
+      "import": "./dist/eslint.js"
+    },
     "./*": "./*"
   },
   "typesVersions": {
