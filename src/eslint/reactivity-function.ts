@@ -11,7 +11,7 @@ export type ReactivityFunctionRuleOptions = [ReactivityFunctionSchema0]
 export type RuleOptions = ReactivityFunctionRuleOptions
 export type MessageIds = 'reactivity-function'
 
-const include = [
+const defaultIncludes = [
   'ref',
   'shallowRef',
   'computed',
@@ -20,15 +20,16 @@ const include = [
   'customRef',
   'useRef',
   'useTemplateRef',
+  'defineModel',
 ]
 
-const exclude = ['useRoute', 'useRouter']
+const defaultExcludes: string[] = []
 
 const rule: RuleModule<MessageIds, RuleOptions> = {
   defaultOptions: [
     {
-      include,
-      exclude,
+      include: defaultIncludes,
+      exclude: defaultExcludes,
     },
   ],
   meta: {
@@ -49,8 +50,11 @@ const rule: RuleModule<MessageIds, RuleOptions> = {
     ],
   },
   create(context) {
-    const includes = context.options[0]?.include ?? include
-    const excludes = context.options[0]?.exclude ?? exclude
+    const includes = [
+      ...defaultIncludes,
+      ...(context.options[0]?.include ?? []),
+    ]
+    const excludes = context.options[0]?.exclude ?? defaultExcludes
     return {
       VariableDeclarator(node) {
         if (node.init?.type !== 'CallExpression' || !node.id) return
