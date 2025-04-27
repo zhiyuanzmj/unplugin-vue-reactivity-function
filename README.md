@@ -134,7 +134,7 @@ export const useUserStore = defineStore('user', () => {
 import { useBase64 } from '@vueuse/core'
 import { useUserStore } from '~/store/user'
 
-const { token, login } = useUserStore()
+const { token, login } = $useUserStore()
 ;[token]
 // convert to:
 const { token, login } = toRefs(useUserStore())
