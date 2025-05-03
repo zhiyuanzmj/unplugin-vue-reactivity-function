@@ -101,6 +101,7 @@
     "test": "vitest",
     "play": "pnpm run -C ./playground dev",
     "release": "bumpp && pnpm publish",
+    "typecheck": "tsmc --noEmit",
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
@@ -117,6 +118,7 @@
     "@babel/types": "^7.27.1",
     "@sxzz/eslint-config": "^6.2.0",
     "@sxzz/prettier-config": "^2.2.1",
+    "@ts-macro/tsc": "^0.1.25",
     "@types/babel__traverse": "^7.20.7",
     "@types/eslint": "^9.6.1",
     "@types/node": "^22.15.3",
