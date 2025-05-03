@@ -2,7 +2,7 @@ import Vue from '@vitejs/plugin-vue'
 import VueJsx from '@vitejs/plugin-vue-jsx'
 import { defineConfig } from 'vite'
 import Inspect from 'vite-plugin-inspect'
-import VueReactivityFunction from '../src/vite'
+import VueReactivityFunction from '../dist/vite'
 
 export default defineConfig({
   build: {

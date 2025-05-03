@@ -84,11 +84,11 @@ export function getRequire() {
 }
 
 let parseSync: typeof import('oxc-parser').parseSync
-export async function getOxcParser() {
+// @ts-ignore
+export async function getOxcParser(browser = typeof window !== 'undefined') {
   if (!parseSync) {
     parseSync = await import(
-      // @ts-ignore
-      typeof window !== 'undefined'
+      browser
         ? 'https://cdn.jsdelivr.net/npm/@oxc-parser/binding-wasm32-wasi/browser-bundle.mjs'
         : 'oxc-parser'
     ).then((mod) => mod.parseSync)

@@ -23,20 +23,20 @@ import type { IdentifierName, Node } from 'oxc-parser'
 import type { UnpluginOptions } from 'unplugin'
 
 let parseSync: typeof import('oxc-parser').parseSync
-if (__ESM__) {
-  parseSync = await getOxcParser()
-} else {
-  const require = getRequire()
-  if (require) {
-    parseSync = require('oxc-parser').parseSync
-  }
-}
 
-export function transformReactivityFunction(
+export async function transformReactivityFunction(
   code: string,
   ignore: string[],
   s: MagicStringAST,
 ) {
+  if (__ESM__) {
+    parseSync = await getOxcParser()
+  } else {
+    const require = getRequire()
+    if (require) {
+      parseSync = require('oxc-parser').parseSync
+    }
+  }
   const { program } = parseSync('index.tsx', code, {
     sourceType: 'module',
   })
@@ -203,7 +203,7 @@ const plugin = (rawOptions: Options = {}): UnpluginOptions => {
     transformInclude(id) {
       return filter(id)
     },
-    transform(code, id) {
+    async transform(code, id) {
       const lang = getLang(id)
       let asts: {
         text: string
@@ -233,7 +233,7 @@ const plugin = (rawOptions: Options = {}): UnpluginOptions => {
 
       for (const { text, offset } of asts) {
         s.offset = offset
-        transformReactivityFunction(text, options.ignore, s)
+        await transformReactivityFunction(text, options.ignore, s)
       }
 
       return generateTransform(s, id)

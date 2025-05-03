@@ -48,7 +48,7 @@ export default plugin
 
 let parseSync: typeof import('oxc-parser').parseSync
 if (__BROWSER__) {
-  parseSync = await getOxcParser()
+  parseSync = await getOxcParser(true)
 } else {
   const require = getRequire()
   if (require) {
