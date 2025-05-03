@@ -5,14 +5,15 @@ import {
   replaceSourceRange,
 } from 'ts-macro'
 import { analyze } from '@typescript-eslint/scope-manager'
-// @ts-ignore
 import { walk } from 'estree-walker'
-import { type IdentifierName, type Node, parseSync } from 'oxc-parser'
 import {
   collectRefs,
+  getOxcParser,
   getReferences,
+  getRequire,
   transformFunctionReturn,
 } from './core/utils'
+import type { IdentifierName, Node } from 'oxc-parser'
 
 const HELPER_PREFIX = '__MACROS_'
 
@@ -28,7 +29,7 @@ const plugin = createPlugin<{ ignore?: string[] } | undefined>(
     const ignore = (options?.ignore || []).map((str) => str.slice(1))
     return {
       name: 'vue-reactivity-function',
-      resolveVirtualCode({ filePath, ast, source, codes }) {
+      resolveVirtualCode({ ast, source, codes }) {
         if (!ast.text.includes('$')) return
         try {
           transformReactivityFunction({
@@ -45,6 +46,16 @@ const plugin = createPlugin<{ ignore?: string[] } | undefined>(
 
 export default plugin
 
+let parseSync: typeof import('oxc-parser').parseSync
+if (__BROWSER__) {
+  parseSync = await getOxcParser()
+} else {
+  const require = getRequire()
+  if (require) {
+    parseSync = require('oxc-parser').parseSync
+  }
+}
+
 function transformReactivityFunction(options: {
   codes: Code[]
   source?: string
@@ -58,14 +69,14 @@ function transformReactivityFunction(options: {
   const unrefs: IdentifierName[] = []
   const refs: Node[] = []
   let index = 0
-  walk(program, {
-    leave(node: Node, parent: Node) {
+  walk<Node>(program, {
+    leave(node, parent) {
       // @ts-ignore
       node.parent = parent
       // @ts-ignore
       node.range = [node.start, node.end]
     },
-    enter(node: Node, parent: Node) {
+    enter(node, parent) {
       if (node.type === 'TSNonNullExpression') {
         node = node.expression
       }

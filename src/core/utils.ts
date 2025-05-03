@@ -1,3 +1,4 @@
+/* eslint-disable node/prefer-global/process */
 import { walk } from 'estree-walker'
 import type { Node } from 'oxc-parser'
 import type { Reference, Scope } from '@typescript-eslint/scope-manager'
@@ -64,4 +65,33 @@ export function transformFunctionReturn(node: Node, refs: Node[]) {
       })
     }
   }
+}
+
+let require: NodeJS.Require | undefined
+export function getRequire() {
+  if (require) return require
+
+  try {
+    // @ts-expect-error check api
+    if (globalThis.process?.getBuiltinModule) {
+      const module = process.getBuiltinModule('module')
+      // unenv has implemented `getBuiltinModule` but has yet to support `module.createRequire`
+      if (module?.createRequire) {
+        return (require = module.createRequire(import.meta.url))
+      }
+    }
+  } catch {}
+}
+
+let parseSync: typeof import('oxc-parser').parseSync
+export async function getOxcParser() {
+  if (!parseSync) {
+    parseSync = await import(
+      // @ts-ignore
+      typeof window !== 'undefined'
+        ? 'https://cdn.jsdelivr.net/npm/@oxc-parser/binding-wasm32-wasi/browser-bundle.mjs'
+        : 'oxc-parser'
+    ).then((mod) => mod.parseSync)
+  }
+  return parseSync
 }

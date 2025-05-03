@@ -10,22 +10,23 @@ import {
   parseSFC,
 } from '@vue-macros/common'
 import { analyze } from '@typescript-eslint/scope-manager'
-import { type IdentifierName, type Node, parseSync } from 'oxc-parser'
-// @ts-ignore
 import { walk } from 'estree-walker'
 import { type Options, resolveOption } from './core/options'
 import {
   collectRefs,
+  getOxcParser,
   getReferences,
   transformFunctionReturn,
 } from './core/utils'
+import type { IdentifierName, Node } from 'oxc-parser'
 import type { UnpluginOptions } from 'unplugin'
 
-export function transformReactivityFunction(
+export async function transformReactivityFunction(
   code: string,
   ignore: string[],
   s: MagicStringAST,
 ) {
+  const parseSync = await getOxcParser()
   const { program } = parseSync('index.tsx', code, {
     sourceType: 'module',
   })
@@ -33,14 +34,14 @@ export function transformReactivityFunction(
   const unrefs: IdentifierName[] = []
   const refs: Node[] = []
   let index = 0
-  walk(program, {
-    leave(node: Node, parent: Node) {
+  walk<Node>(program, {
+    leave(node, parent) {
       // @ts-ignore
       node.parent = parent
       // @ts-ignore
       node.range = [node.start, node.end]
     },
-    enter(node: Node, parent: Node) {
+    enter(node, parent) {
       if (node.type === 'TSNonNullExpression') {
         node = node.expression
       }

@@ -1,4 +1,4 @@
-import reactivityFunction from './src/volar'
+import reactivityFunction from './dist/volar.js'
 
 export default {
   plugins: [reactivityFunction()],

@@ -52,6 +52,10 @@
       "require": "./dist/volar.cjs",
       "import": "./dist/volar.js"
     },
+    "./volar-browser": {
+      "require": "./dist/volar-browser.cjs",
+      "import": "./dist/volar-browser.js"
+    },
     "./raw": {
       "require": "./dist/raw.cjs",
       "import": "./dist/raw.js"

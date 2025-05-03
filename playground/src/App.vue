@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { type Ref, inject, provide, toRefs, watch } from 'vue'
+import { type Ref, inject, provide, ref, toRefs, watch } from 'vue'
 import { useBase64 } from '@vueuse/core'
 import { useUserStore } from '../store/user'
 
