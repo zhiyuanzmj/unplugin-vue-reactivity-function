@@ -1,6 +1,6 @@
 <script setup lang="tsx">
-import { type Ref, inject, provide, ref, toRefs, watch } from 'vue'
 import { useBase64 } from '@vueuse/core'
+import { inject, provide, ref, toRefs, watch, type Ref } from 'vue'
 import { useUserStore } from '../store/user'
 
 const { token, login } = $toRefs(useUserStore())

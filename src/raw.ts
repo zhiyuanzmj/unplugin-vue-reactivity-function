@@ -1,17 +1,17 @@
+import { analyze } from '@typescript-eslint/scope-manager'
 import {
-  HELPER_PREFIX,
-  MagicStringAST,
-  REGEX_SETUP_SFC,
-  REGEX_SRC_FILE,
   createFilter,
   generateTransform,
   getLang,
+  HELPER_PREFIX,
   importHelperFn,
+  MagicStringAST,
   parseSFC,
+  REGEX_SETUP_SFC,
+  REGEX_SRC_FILE,
 } from '@vue-macros/common'
-import { analyze } from '@typescript-eslint/scope-manager'
 import { walk } from 'estree-walker'
-import { type Options, resolveOption } from './core/options'
+import { resolveOption, type Options } from './core/options'
 import {
   collectRefs,
   getOxcParser,

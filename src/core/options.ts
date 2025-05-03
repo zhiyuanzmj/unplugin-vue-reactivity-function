@@ -1,7 +1,7 @@
 import {
-  type BaseOptions,
   REGEX_NODE_MODULES,
   REGEX_SUPPORTED_EXT,
+  type BaseOptions,
 } from '@vue-macros/common'
 
 export interface Options extends Pick<BaseOptions, 'include' | 'exclude'> {

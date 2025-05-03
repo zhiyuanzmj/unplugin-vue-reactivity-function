@@ -1,11 +1,11 @@
+import { analyze } from '@typescript-eslint/scope-manager'
+import { walk } from 'estree-walker'
 import {
-  type Code,
   allCodeFeatures,
   createPlugin,
   replaceSourceRange,
+  type Code,
 } from 'ts-macro'
-import { analyze } from '@typescript-eslint/scope-manager'
-import { walk } from 'estree-walker'
 import {
   collectRefs,
   getOxcParser,
