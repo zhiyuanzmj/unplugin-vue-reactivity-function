@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { describe } from 'vitest'
 import { RollupVueJsx, rollupBuild, testFixtures } from '@vue-macros/test-utils'
-import VueReactivityFunction from '../src/rollup'
+import VueReactivityFunction from '../dist/rollup'
 
 describe('fixtures', async () => {
   await testFixtures(

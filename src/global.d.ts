@@ -10,3 +10,4 @@ declare module 'estree-walker' {
 }
 
 declare let __BROWSER__: boolean
+declare let __ESM__: boolean

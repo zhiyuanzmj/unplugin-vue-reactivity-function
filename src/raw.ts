@@ -16,17 +16,27 @@ import {
   collectRefs,
   getOxcParser,
   getReferences,
+  getRequire,
   transformFunctionReturn,
 } from './core/utils'
 import type { IdentifierName, Node } from 'oxc-parser'
 import type { UnpluginOptions } from 'unplugin'
 
-export async function transformReactivityFunction(
+let parseSync: typeof import('oxc-parser').parseSync
+if (__ESM__) {
+  parseSync = await getOxcParser()
+} else {
+  const require = getRequire()
+  if (require) {
+    parseSync = require('oxc-parser').parseSync
+  }
+}
+
+export function transformReactivityFunction(
   code: string,
   ignore: string[],
   s: MagicStringAST,
 ) {
-  const parseSync = await getOxcParser()
   const { program } = parseSync('index.tsx', code, {
     sourceType: 'module',
   })
