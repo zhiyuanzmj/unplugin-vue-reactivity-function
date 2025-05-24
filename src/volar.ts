@@ -79,8 +79,8 @@ function transformReactivityFunction(options: {
     enter(node, parent) {
       let tsNonNullExpressionEnd = 0
       if (node.type === 'TSNonNullExpression') {
-        node = node.expression
         tsNonNullExpressionEnd = node.end
+        node = node.expression
       }
 
       if (node.type === 'CallExpression') {
