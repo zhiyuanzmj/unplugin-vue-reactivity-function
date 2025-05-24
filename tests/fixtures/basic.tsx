@@ -9,24 +9,24 @@ function useApi$(defaultName = ref('')) {
   }
 }
 
-let { id: id1 = 0, name, ...rest1 } = $useApi();
-;id1 == 0
+let { id: id1 = 0, name, ...rest1 } = $useApi()!
+id1 == 0
 console.log({
   id1,
   name,
-  rest1
+  rest1,
 })
 useApi$(name)
 
 function useArray$() {
   const foo = $ref(1)
-  const bar = $ref(2) 
-  ;[$$(foo),$$(bar)]
+  const bar = $ref(2)
+  ;[$$(foo), $$(bar)]
   return [foo, bar]
 }
 
 let [foo = 0] = $useArray()
-foo === 1  
+foo === 1
 foo = 1
 
 // @ts-expect-error
@@ -36,14 +36,18 @@ console.log$(name)
 watch$(name, () => {
   let name = 1
   return {
-    name
+    name,
   }
 })
 
 defineExpose$({
   name,
-})    
-const title = $ref<string>('title')  
+})
+const title = $ref<string>('title')
 console.log($$(title))
-const Comp = ({ title }: { title: Ref<string>, foo: string }) => title.value
-export default () => <Comp title$={title} foo={title}>{title}</Comp>
+const Comp = ({ title }: { title: Ref<string>; foo: string }) => title.value
+export default () => (
+  <Comp title$={title} foo={title}>
+    {title}
+  </Comp>
+)

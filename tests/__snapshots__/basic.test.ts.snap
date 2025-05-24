@@ -16,7 +16,6 @@ let __MACROS_ref0 = useApi(),
   id1 = toRef(__MACROS_ref0, 'id', 0),
   name = toRef(__MACROS_ref0, 'name'),
   rest1 = createPropsRestProxy(__MACROS_ref0, ['id', 'name']);
-;
 id1.value == 0;
 console.log({
   id1: id1.value,

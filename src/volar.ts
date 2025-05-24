@@ -77,9 +77,12 @@ function transformReactivityFunction(options: {
       node.range = [node.start, node.end]
     },
     enter(node, parent) {
+      let tsNonNullExpressionEnd = 0
       if (node.type === 'TSNonNullExpression') {
         node = node.expression
+        tsNonNullExpressionEnd = node.end
       }
+
       if (node.type === 'CallExpression') {
         const calleeName = text.slice(node.callee.start, node.callee.end)
         if (calleeName === '$$') {
@@ -171,15 +174,15 @@ function transformReactivityFunction(options: {
             replaceSourceRange(
               codes,
               source,
-              node.end,
-              node.end,
+              tsNonNullExpressionEnd || node.end,
+              tsNonNullExpressionEnd || node.end,
               '\n,',
               ...toRefs.join('\n,'),
               '\n,',
               `${toValuesName} = `,
               parent.id.type === 'ArrayPattern' ? '[' : '{',
-              hasRest ? `...${refName},` : '',
-              ...toValues.join('\n,'),
+              hasRest ? `...${refName}, ` : '',
+              ...toValues.join(', '),
               parent.id.type === 'ArrayPattern' ? ']' : '}',
               '\n,',
               [
