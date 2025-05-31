@@ -11,6 +11,7 @@ import {
   getOxcParser,
   getReferences,
   getRequire,
+  isInVSlot,
   transformFunctionReturn,
 } from './core/utils'
 import type { IdentifierName, Node } from 'oxc-parser'
@@ -264,6 +265,8 @@ function transformReactivityFunction(options: {
         parent: Node
       }
       if (refs.includes(identifier)) {
+        const parent = identifier.parent
+        if (isInVSlot(parent)) continue
         replaceSourceRange(
           codes,
           source,
@@ -272,7 +275,6 @@ function transformReactivityFunction(options: {
           `(${id.name},${HELPER_PREFIX}refs_${id.name}.`,
         )
         replaceSourceRange(codes, source, identifier.end, identifier.end, ')')
-        const parent = identifier.parent
         if (parent?.type === 'Property' && parent.shorthand) {
           replaceSourceRange(
             codes,

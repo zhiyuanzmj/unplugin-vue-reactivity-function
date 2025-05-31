@@ -47,7 +47,7 @@ const title = $ref<string>('title')
 console.log($$(title))
 const Comp = ({ title }: { title: Ref<string>; foo: string }) => title.value
 export default () => (
-  <Comp title$={title} foo={title}>
+  <Comp title$={title} foo={title} v-slot:slot={{ title }}>
     {title}
   </Comp>
 )

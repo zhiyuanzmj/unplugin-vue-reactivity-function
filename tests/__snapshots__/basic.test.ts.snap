@@ -2,7 +2,7 @@
 
 exports[`fixtures > tests/fixtures/basic.tsx 1`] = `
 "// basic.js
-import { ref, toRef, createPropsRestProxy, watch, createVNode } from 'vue';
+import { ref, toRef, createPropsRestProxy, watch, withDirectives, createVNode, resolveDirective } from 'vue';
 
 function useApi(defaultName = ref('')) {
   const id = ref(1);
@@ -51,12 +51,14 @@ console.log(title);
 const Comp = ({
   title
 }) => title.value;
-var basic = () => createVNode(Comp, {
+var basic = () => withDirectives(createVNode(Comp, {
   "title": title,
   "foo": title.value
 }, {
   default: () => [title.value]
-});
+}), [[resolveDirective("slot"), {
+  title
+}, "slot"]]);
 
 export { basic as default };
 "

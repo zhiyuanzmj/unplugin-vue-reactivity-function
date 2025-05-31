@@ -17,6 +17,7 @@ import {
   getOxcParser,
   getReferences,
   getRequire,
+  isInVSlot,
   transformFunctionReturn,
 } from './core/utils'
 import type { IdentifierName, Node } from 'oxc-parser'
@@ -181,6 +182,7 @@ export async function transformReactivityFunction(
       }
       if (!refs.includes(identifier)) {
         const parent = identifier.parent
+        if (isInVSlot(parent)) continue
         if (parent?.type === 'Property' && parent.shorthand) {
           // { foo } => { foo: foo.value }
           s.appendLeft(identifier.start, `${id.name}: `)

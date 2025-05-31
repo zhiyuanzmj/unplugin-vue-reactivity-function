@@ -18,6 +18,11 @@ export function resolveOption(options: Options): OptionsResolved {
     include: [REGEX_SUPPORTED_EXT],
     exclude: [REGEX_NODE_MODULES],
     ...options,
-    ignore: [...ignore, ...(options.ignore || []).map((str) => str.slice(1))],
+    ignore: [
+      ...ignore,
+      ...(options.ignore || []).map((str) =>
+        str.replace(/^\$?([^$]+)\$?$/, '$1'),
+      ),
+    ],
   }
 }

@@ -95,3 +95,15 @@ export async function getOxcParser(browser = typeof window !== 'undefined') {
   }
   return parseSync
 }
+
+export function isInVSlot(node?: Node & { parent?: Node }): boolean {
+  return (
+    (node?.type === 'JSXAttribute' &&
+      (node.name.type === 'JSXIdentifier'
+        ? node.name.name
+        : node.name.type === 'JSXNamespacedName'
+          ? node.name.namespace.name
+          : '') === 'v-slot') ||
+    !!(node?.parent && isInVSlot(node?.parent))
+  )
+}
