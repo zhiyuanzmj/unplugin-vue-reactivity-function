@@ -210,7 +210,7 @@ function transformReactivityFunction(options: {
           )
         }
 
-        if (calleeName.endsWith('$')) {
+        if (calleeName.endsWith('$') && !['$', '$$'].includes(calleeName)) {
           replaceSourceRange(
             codes,
             source,

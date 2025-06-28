@@ -134,7 +134,7 @@ export async function transformReactivityFunction(
           s.remove(node.callee.start, node.callee.start + 1)
         }
 
-        if (calleeName.endsWith('$')) {
+        if (calleeName.endsWith('$') && !['$', '$$'].includes(calleeName)) {
           s.remove(node.callee.end - 1, node.callee.end)
 
           node.arguments.forEach((argument) => {
