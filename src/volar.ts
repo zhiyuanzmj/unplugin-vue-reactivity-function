@@ -1,26 +1,30 @@
-import { analyze } from '@typescript-eslint/scope-manager'
-import { walk } from 'estree-walker'
 import {
   allCodeFeatures,
   createPlugin,
+  getStart,
+  getText,
   replaceSourceRange,
   type Code,
 } from 'ts-macro'
-import {
-  collectRefs,
-  getOxcParser,
-  getReferences,
-  getRequire,
-  isInVSlot,
-  transformFunctionReturn,
-} from './core/utils'
-import type { IdentifierName, Node } from 'oxc-parser'
 
-const HELPER_PREFIX = '__MACROS_'
+type Node = import('typescript').Node
+type Identifier = import('typescript').Identifier
 
+const HELPER_PREFIX = '_'
+function isFunctionType(
+  ts: typeof import('typescript'),
+  node: Node | undefined | null,
+) {
+  return (
+    !!node &&
+    (ts.isFunctionDeclaration(node) ||
+      ts.isFunctionExpression(node) ||
+      ts.isMethodDeclaration(node))
+  )
+}
 const plugin = createPlugin<{ ignore?: string[] } | undefined>(
   (
-    { vueCompilerOptions },
+    { ts, vueCompilerOptions },
     options = vueCompilerOptions?.reactivityFunction,
   ) => {
     if (vueCompilerOptions) {
@@ -30,6 +34,7 @@ const plugin = createPlugin<{ ignore?: string[] } | undefined>(
     const ignore = (options?.ignore || []).map((str) => str.slice(1))
     return {
       name: 'vue-reactivity-function',
+      enforce: 'post',
       resolveVirtualCode({ ast, source, codes }) {
         if (!ast.text.includes('$')) return
         try {
@@ -37,7 +42,8 @@ const plugin = createPlugin<{ ignore?: string[] } | undefined>(
             codes,
             source,
             ignore,
-            text: ast.text,
+            ts,
+            ast,
           })
         } catch {}
       },
@@ -47,244 +53,312 @@ const plugin = createPlugin<{ ignore?: string[] } | undefined>(
 
 export default plugin
 
-let parseSync: typeof import('oxc-parser').parseSync
-if (__BROWSER__) {
-  parseSync = await getOxcParser(true)
-} else {
-  const require = getRequire()
-  if (require) {
-    parseSync = require('oxc-parser').parseSync
-  }
-}
-
 function transformReactivityFunction(options: {
   codes: Code[]
   source?: string
-  text: string
+  ts: typeof import('typescript')
+  ast: import('typescript').SourceFile
   ignore: string[]
 }) {
-  const { codes, source, text, ignore } = options
-  const { program } = parseSync('index.tsx', text, {
-    sourceType: 'module',
-  })
-  const unrefs: IdentifierName[] = []
-  const refs: Node[] = []
+  const { codes, source, ts, ast, ignore } = options
+  let scope = ast as import('typescript').Node
+  let prevScope: import('typescript').Node | undefined
+
+  const refs: Identifier[] = []
+  const unRefMap = new Map<Node, Set<string>>()
+  const unRefIds: Record<string, number> = Object.create(null)
+
   let index = 0
-  walk<Node>(program, {
-    leave(node, parent) {
+
+  function markUnRefIdentifier(child: Node) {
+    if (!ts.isIdentifier(child)) return
+    const name = String(child.escapedText)
+    if (name in unRefIds) {
+      unRefIds[name]++
+    } else {
+      unRefIds[name] = 1
+    }
+    ;(unRefMap.get(scope) || unRefMap.set(scope, new Set()).get(scope))!.add(
+      name,
+    )
+  }
+
+  function collectRefs(argument: import('typescript').Node, visiter = true) {
+    if (ts.isIdentifier(argument)) {
+      refs.push(argument)
+    } else if (ts.isCallExpression(argument)) {
+      collectRefs(argument.expression)
+    } else if (ts.isPropertyAccessExpression(argument)) {
+      collectRefs(argument.expression)
+    } else if (
+      ts.isFunctionExpression(argument) ||
+      ts.isArrowFunction(argument)
+    ) {
+      transformFunctionReturn(argument)
+    } else if (ts.isArrayLiteralExpression(argument)) {
+      argument.elements.forEach((arg) => {
+        collectRefs(arg!)
+      })
+    } else if (ts.isObjectBindingPattern(argument)) {
+      argument.elements.forEach((prop) => {
+        if (ts.isBindingElement(prop)) {
+          collectRefs(prop.name)
+        }
+      })
+    } else if (visiter) {
       // @ts-ignore
-      node.parent = parent
-      // @ts-ignore
-      node.range = [node.start, node.end]
-    },
-    enter(node, parent) {
-      let tsNonNullExpressionEnd = 0
-      if (node.type === 'TSNonNullExpression') {
-        tsNonNullExpressionEnd = node.end
-        node = node.expression
+      ts.forEachChild(argument, function walk(node) {
+        collectRefs(node, false)
+        ts.forEachChild(node, walk)
+      })
+    }
+  }
+
+  function transformFunctionReturn(node: import('typescript').Node) {
+    if (
+      (ts.isFunctionExpression(node) ||
+        ts.isFunctionDeclaration(node) ||
+        ts.isArrowFunction(node)) &&
+      node.body
+    ) {
+      if (!ts.isBlock(node.body)) {
+        collectRefs(node.body)
+      } else if (ts.isBlock(node.body)) {
+        node.body.statements?.forEach((statement) => {
+          if (ts.isReturnStatement(statement) && statement.expression) {
+            collectRefs(statement.expression)
+          }
+        })
       }
+    }
+  }
 
-      if (node.type === 'CallExpression') {
-        const calleeName = text.slice(node.callee.start, node.callee.end)
-        if (calleeName === '$$') {
-          refs.push(node.arguments[0])
-          replaceSourceRange(codes, source, node.callee.start, node.callee.end)
+  // @ts-ignore
+  ts.forEachChild(ast, function walk(node, parent) {
+    node.parent = parent
+    let tsNonNullExpressionEnd = 0
+    if (ts.isNonNullExpression(node)) {
+      tsNonNullExpressionEnd = node.end
+      node = node.expression
+    }
+
+    if (ts.isCallExpression(node)) {
+      const calleeName = getText(node.expression, ast, ts)
+
+      if (calleeName === '$$') {
+        ts.isIdentifier(node.arguments[0]) && refs.push(node.arguments[0])
+        replaceSourceRange(
+          codes,
+          source,
+          node.expression.pos,
+          node.expression.end,
+        )
+      } else if (
+        parent &&
+        ts.isVariableDeclaration(parent) &&
+        (calleeName === '$' ||
+          new RegExp(`^\\$(?!(\\$|${ignore.join('|')})?$)`).test(calleeName))
+      ) {
+        const id = parent.name!
+        if (ts.isIdentifier(id)) {
+          markUnRefIdentifier(id)
+          const start = getStart(id, ast, ts)
+          const text = String(id.escapedText)
+          index++
+          const refName = `${HELPER_PREFIX}ref${index}`
+          const refsName = `${HELPER_PREFIX}refs_${text}`
+          replaceSourceRange(codes, source, start, id.end, refName)
+          replaceSourceRange(
+            codes,
+            source,
+            node.end,
+            node.end,
+            '\n,',
+            `${refsName} = {${text}: ${refName}}`,
+            '\n,',
+            [text, source, start, allCodeFeatures],
+            ` = ${refsName}.${text}.value`,
+          )
         } else if (
-          parent?.type === 'VariableDeclarator' &&
-          (calleeName === '$' ||
-            new RegExp(`^\\$(?!(\\$|${ignore.join('|')})?$)`).test(calleeName))
+          ts.isObjectBindingPattern(id) ||
+          ts.isArrayBindingPattern(id)
         ) {
-          if (parent.id.type === 'Identifier') {
-            index++
-            const refName = `${HELPER_PREFIX}ref${index}`
-            const refsName = `${HELPER_PREFIX}refs_${parent.id.name}`
-            replaceSourceRange(
-              codes,
-              source,
-              parent.id.start,
-              parent.id.end,
-              refName,
-            )
-            replaceSourceRange(
-              codes,
-              source,
-              node.end,
-              node.end,
-              '\n,',
-              `${refsName} = {${parent.id.name}: ${refName}}`,
-              '\n,',
-              [parent.id.name, source, parent.id.start, allCodeFeatures],
-              ` = ${refsName}.${parent.id.name}.value`,
-            )
-            unrefs.push(parent.id)
-          } else if (
-            parent.id.type === 'ObjectPattern' ||
-            parent.id.type === 'ArrayPattern'
-          ) {
-            index++
-            const refName = `${HELPER_PREFIX}ref${index}`
-            const toValuesName = `${HELPER_PREFIX}toValues${index}`
-            const toRef = `${HELPER_PREFIX}toRef`
-            const isObjectPattern = parent.id.type === 'ObjectPattern'
-            const props =
-              parent.id.type === 'ObjectPattern'
-                ? parent.id.properties
-                : parent.id.elements
-            let propIndex = 0
-            const toRefs: string[] = []
-            const toValues: string[] = []
-            let hasRest = false
-            for (const prop of props) {
-              if (!prop) continue
-              if (prop.type === 'RestElement') {
-                hasRest = true
-                continue
-              }
-              const propKey =
-                isObjectPattern &&
-                prop.type === 'Property' &&
-                prop.key.type === 'Identifier'
-                  ? prop.key.name
-                  : propIndex++
-              const propValue =
-                isObjectPattern && prop.type === 'Property' ? prop.value : prop
-              const aliasKey =
-                propValue.type === 'AssignmentPattern'
-                  ? propValue.left
-                  : propValue
-              const defaultValue =
-                propValue.type === 'AssignmentPattern'
-                  ? `, ${text.slice(propValue.right.start, propValue.right.end)}`
-                  : ''
-              if (aliasKey.type === 'Identifier') {
-                unrefs.push(aliasKey)
-
-                const helperRefName = `${HELPER_PREFIX}refs_${aliasKey.name}`
-                const resolvedPropKey =
-                  parent.id.type === 'ArrayPattern' ? propKey : `'${propKey}'`
-                toRefs.push(
-                  `${helperRefName} = {${aliasKey.name}: ${toRef}(${refName}, ${resolvedPropKey}${defaultValue})}`,
-                )
-                toValues.push(
-                  `${
-                    parent.id.type === 'ObjectPattern' ? `${propKey}:` : ''
-                  }${helperRefName}.${aliasKey.name}.value`,
-                )
-              }
+          index++
+          const refName = `${HELPER_PREFIX}ref${index}`
+          const toValuesName = `${HELPER_PREFIX}toValues${index}`
+          const toRef = `${HELPER_PREFIX}toRef`
+          const isObjectPattern = ts.isObjectBindingPattern(id)
+          const props = id.elements
+          let propIndex = 0
+          const toRefs: string[] = []
+          const toValues: string[] = []
+          let hasRest = false
+          for (const prop of props) {
+            if (!ts.isBindingElement(prop)) continue
+            // @ts-ignore
+            if (prop.dotDotDotToken) {
+              hasRest = true
+              continue
             }
-            replaceSourceRange(
-              codes,
-              source,
-              tsNonNullExpressionEnd || node.end,
-              tsNonNullExpressionEnd || node.end,
-              '\n,',
-              ...toRefs.join('\n,'),
-              '\n,',
-              `${toValuesName} = `,
-              parent.id.type === 'ArrayPattern' ? '[' : '{',
-              hasRest ? `...${refName}, ` : '',
-              ...toValues.join(', '),
-              parent.id.type === 'ArrayPattern' ? ']' : '}',
-              '\n,',
-              [
-                text.slice(parent.id.start, parent.id.end),
-                source,
-                parent.id.start,
-                allCodeFeatures,
-              ],
-              ` = ${toValuesName}`,
-            )
-            replaceSourceRange(
-              codes,
-              source,
-              parent.id.start,
-              parent.id.end,
-              refName,
-            )
+            const propertyName = prop.propertyName
+              ? prop.propertyName
+              : prop.name
+            const propKey = isObjectPattern
+              ? getText(propertyName, ast, ts)
+              : propIndex++
+            const defaultValue =
+              ts.isBindingElement(prop) && prop.initializer
+                ? `, ${getText(prop.initializer, ast, ts)}`
+                : ''
+            if (ts.isIdentifier(prop.name)) {
+              markUnRefIdentifier(prop.name)
+              const helperRefName = `${HELPER_PREFIX}refs_${prop.name.escapedText}`
+              const resolvedPropKey = isObjectPattern ? `'${propKey}'` : propKey
+              toRefs.push(
+                `${helperRefName} = {${prop.name.escapedText}: ${toRef}(${refName}, ${resolvedPropKey}${defaultValue})}`,
+              )
+              toValues.push(
+                `${
+                  prop.propertyName ? '' : `${propKey}:`
+                }${helperRefName}.${prop.name.escapedText}.value`,
+              )
+            }
           }
           replaceSourceRange(
             codes,
             source,
-            node.callee.start,
-            node.callee.start + 1,
+            tsNonNullExpressionEnd || node.end,
+            tsNonNullExpressionEnd || node.end,
+            '\n,',
+            ...toRefs.join('\n,'),
+            `\n,${toValuesName} = `,
+            isObjectPattern ? '{' : '[',
+            hasRest ? `...${refName}, ` : '',
+            ...toValues.join(', '),
+            isObjectPattern ? '}' : ']',
+            '\n,',
+            [
+              getText(id, ast, ts),
+              source,
+              getStart(id, ast, ts),
+              allCodeFeatures,
+            ],
+            ` = ${toValuesName}`,
           )
-        }
-
-        if (calleeName.endsWith('$') && !['$', '$$'].includes(calleeName)) {
           replaceSourceRange(
             codes,
             source,
-            node.callee.end - 1,
-            node.callee.end,
+            getStart(id, ast, ts),
+            id.end,
+            refName,
           )
-
-          node.arguments.forEach((argument) => {
-            collectRefs(argument, refs)
-          })
         }
-      } else if (
-        node.type === 'JSXAttribute' &&
-        node.value?.type === 'JSXExpressionContainer' &&
-        node.name.type === 'JSXIdentifier' &&
-        node.name.name.endsWith('$') &&
-        node.name.name.split('').filter((i) => i === '$').length !== 2
-      ) {
-        replaceSourceRange(codes, source, node.name.end - 1, node.name.end)
-        if (node.value.expression) {
-          collectRefs(node.value.expression, refs)
-        }
-      } else if (
-        node.type === 'FunctionDeclaration' &&
-        node.id?.type === 'Identifier' &&
-        node.id.name.endsWith('$')
-      ) {
-        transformFunctionReturn(node, refs)
-        replaceSourceRange(codes, source, node.id.end - 1, node.id.end)
-      } else if (
-        node.type === 'ArrowFunctionExpression' &&
-        parent?.type === 'VariableDeclarator' &&
-        parent.id?.type === 'Identifier' &&
-        parent.id.name.endsWith('$')
-      ) {
-        transformFunctionReturn(node, refs)
-        replaceSourceRange(codes, source, parent.id.end - 1, parent.id.end)
+        if (parent.initializer)
+          replaceSourceRange(
+            codes,
+            source,
+            getStart(parent.initializer, ast, ts),
+            getStart(parent.initializer, ast, ts) + 1,
+          )
       }
-    },
+
+      if (calleeName.endsWith('$') && !['$', '$$'].includes(calleeName)) {
+        replaceSourceRange(
+          codes,
+          source,
+          node.expression.end - 1,
+          node.expression.end,
+        )
+
+        node.arguments.forEach((argument) => {
+          collectRefs(argument)
+        })
+      }
+    } else if (
+      ts.isJsxAttribute(node) &&
+      node.initializer &&
+      ts.isJsxExpression(node.initializer) &&
+      ts.isIdentifier(node.name) &&
+      String(node.name.escapedText).endsWith('$') &&
+      String(node.name.escapedText)
+        .split('')
+        .filter((i) => i === '$').length !== 2
+    ) {
+      replaceSourceRange(codes, source, node.name.end - 1, node.name.end)
+      if (node.initializer.expression) {
+        collectRefs(node.initializer.expression)
+      }
+    } else if (ts.isBlock(node)) {
+      scope = node
+    } else if (isFunctionType(ts, node)) {
+      if (
+        ts.isFunctionDeclaration(node) &&
+        node.name &&
+        ts.isIdentifier(node.name) &&
+        String(node.name.escapedText).endsWith('$')
+      ) {
+        transformFunctionReturn(node)
+        replaceSourceRange(codes, source, node.name.end - 1, node.name.end)
+      } else if (
+        ts.isArrowFunction(node) &&
+        ts.isVariableDeclaration(parent) &&
+        ts.isIdentifier(parent.name) &&
+        String(parent.name.escapedText).endsWith('$')
+      ) {
+        transformFunctionReturn(node)
+        replaceSourceRange(codes, source, parent.name.end - 1, parent.name.end)
+      }
+    }
+
+    ts.forEachChild(node, (child) => {
+      walk(child, node)
+    })
+
+    if (ts.isBlock(node)) {
+      scope = prevScope ?? ast
+    }
+
+    if (
+      node !==
+        (ts.isExpressionStatement(ast.statements[0]) &&
+          ast.statements[0].expression) &&
+      unRefMap.get(node)
+    ) {
+      for (const id of unRefMap.get(node)!) {
+        unRefIds[id]--
+        if (unRefIds[id] === 0) {
+          delete unRefIds[id]
+        }
+      }
+      unRefMap.delete(node)
+    }
   })
 
   codes.push(
     `declare const { toRef: ${HELPER_PREFIX}toRef }: typeof import('vue')`,
   )
-  const scopeManager = analyze(program as any, {
-    sourceType: 'module',
-  })
-  for (const id of unrefs) {
-    const references = getReferences(scopeManager.globalScope!, id)
-    for (const ref of references) {
-      const identifier = ref.identifier as unknown as IdentifierName & {
-        parent: Node
-      }
-      if (refs.includes(identifier)) {
-        const parent = identifier.parent
-        if (isInVSlot(parent)) continue
-        replaceSourceRange(
-          codes,
-          source,
-          identifier.start,
-          identifier.start,
-          `(${id.name},${HELPER_PREFIX}refs_${id.name}.`,
-        )
-        replaceSourceRange(codes, source, identifier.end, identifier.end, ')')
-        if (parent?.type === 'Property' && parent.shorthand) {
-          replaceSourceRange(
-            codes,
-            source,
-            parent.value.start,
-            parent.value.start,
-            `${id.name}: `,
-          )
-        }
-      }
+  for (const identifier of refs) {
+    const name = String(identifier.escapedText)
+    if (!unRefIds[name]) continue
+    replaceSourceRange(
+      codes,
+      source,
+      getStart(identifier, ast, ts),
+      getStart(identifier, ast, ts),
+      `(${name},${HELPER_PREFIX}refs_${name}.`,
+    )
+    replaceSourceRange(codes, source, identifier.end, identifier.end, ')')
+    if (
+      identifier.parent &&
+      ts.isShorthandPropertyAssignment(identifier.parent)
+    ) {
+      replaceSourceRange(
+        codes,
+        source,
+        getStart(identifier.parent.name, ast, ts),
+        getStart(identifier.parent.name, ast, ts),
+        `${name}: `,
+      )
     }
   }
 }

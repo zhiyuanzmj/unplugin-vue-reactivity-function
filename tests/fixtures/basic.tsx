@@ -47,7 +47,17 @@ const title = $ref<string>('title')
 console.log($$(title))
 const Comp = ({ title }: { title: Ref<string>; foo: string }) => title.value
 export default () => (
-  <Comp title$={title} foo={title} v-slot:slot={{ title }}>
+  <Comp v-model={title} title$={title} foo={title} v-slot:$title$={{ title }}>
     {title}
   </Comp>
 )
+
+for (let title = 0; title < 10; title++) {
+  let title1 = $ref('')
+  ;[title, title1]
+}
+// @ts-ignore
+;[title1]
+
+// @ts-ignore
+defineExpose$({ reload, container: containerRef })

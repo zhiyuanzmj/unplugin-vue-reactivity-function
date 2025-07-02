@@ -52,13 +52,30 @@ const Comp = ({
   title
 }) => title.value;
 var basic = () => withDirectives(createVNode(Comp, {
+  "modelValue": title.value,
+  "onUpdate:modelValue": $event => title.value = $event,
   "title": title,
   "foo": title.value
 }, {
   default: () => [title.value]
 }), [[resolveDirective("slot"), {
   title
-}, "slot"]]);
+}, "$title", {
+  value$: true
+}]]);
+for (let title = 0; title < 10; title++) {
+  let title1 = ref('');
+  [title, title1.value];
+}
+// @ts-ignore
+;
+[title1];
+
+// @ts-ignore
+defineExpose({
+  reload,
+  container: containerRef
+});
 
 export { basic as default };
 "

@@ -1,4 +1,4 @@
-import { getReferences } from '../core/utils'
+import type { Reference, Scope } from '@typescript-eslint/scope-manager'
 import type { RuleModule } from '@typescript-eslint/utils/ts-eslint'
 
 export interface ReactivityFunctionSchema0 {
@@ -10,6 +10,16 @@ export type ReactivityFunctionRuleOptions = [ReactivityFunctionSchema0]
 
 export type RuleOptions = ReactivityFunctionRuleOptions
 export type MessageIds = 'reactivity-function'
+
+function getReferences(scope: Scope, id: any): Reference[] {
+  return scope.childScopes.reduce(
+    (acc, scope) => (acc.push(...getReferences(scope, id)), acc),
+    scope.references.filter(
+      // @ts-ignore
+      (ref) => ref.identifier !== id && ref.resolved?.identifiers.includes(id),
+    ),
+  )
+}
 
 const defaultIncludes = [
   'ref',
